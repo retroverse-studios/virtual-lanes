@@ -1,0 +1,2 @@
+These are just placeholders for the actual interface screenshots.
+In a real implementation, you would replace these with actual screenshots of the interfaces.

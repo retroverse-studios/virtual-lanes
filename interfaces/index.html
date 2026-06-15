@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Overview - VirtualLanes Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Overview";
+        var mkdocs_page_input_path = "interfaces.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> VirtualLanes Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Interfaces</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Overview</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#choosing-an-interface">Choosing an Interface</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#python-library">Python Library</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#command-line-interface-cli">Command Line Interface (CLI)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#terminal-user-interface-tui">Terminal User Interface (TUI)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#web-interface">Web Interface</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#switching-between-interfaces">Switching Between Interfaces</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#interface-architecture">Interface Architecture</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tui/">TUI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../web/">Web</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contribute/">Contributing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contact/">Contact</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">VirtualLanes Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Interfaces</li>
+      <li class="breadcrumb-item active">Overview</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="virtuallanes-interfaces">VirtualLanes Interfaces</h1>
+<p>VirtualLanes provides multiple interfaces to interact with the bowling simulation library, allowing you to choose the most appropriate interface for your needs.</p>
+<h2 id="overview">Overview</h2>
+<p>VirtualLanes offers four distinct ways to interact with the library:</p>
+<ol>
+<li><strong>Python Library</strong> - Import and use VirtualLanes as a Python module</li>
+<li><strong>Command Line Interface (CLI)</strong> - Use the <code>virtual-lanes</code> command in your terminal</li>
+<li><strong>Terminal User Interface (TUI)</strong> - Interactive terminal-based dashboard</li>
+<li><strong>Web Interface</strong> - Browser-based graphical interface</li>
+</ol>
+<h2 id="choosing-an-interface">Choosing an Interface</h2>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Best For</th>
+<th>Requires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python Library</td>
+<td>Integration with other Python code, custom workflows</td>
+<td>Python knowledge</td>
+</tr>
+<tr>
+<td>CLI</td>
+<td>Quick commands, scripting, automation</td>
+<td>Terminal access</td>
+</tr>
+<tr>
+<td>TUI</td>
+<td>Interactive management on remote servers, low bandwidth connections</td>
+<td>Modern terminal</td>
+</tr>
+<tr>
+<td>Web Interface</td>
+<td>User-friendly access, team management, visualization</td>
+<td>Web browser</td>
+</tr>
+</tbody>
+</table>
+<h2 id="python-library">Python Library</h2>
+<p>The Python library interface is the core of VirtualLanes, allowing direct programmatic access to all features.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">virtual_lanes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Alley</span><span class="p">,</span> <span class="n">Bowler</span><span class="p">,</span> <span class="n">Game</span><span class="p">,</span> <span class="n">Scoring</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Create one or more bowlers with strike/spare probabilities (0.0 - 1.0)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">player</span> <span class="o">=</span> <span class="n">Bowler</span><span class="p">(</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span> <span class="n">strike_prob</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">spare_prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Create an alley and simulate a game (random_seed makes it reproducible)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">alley</span> <span class="o">=</span> <span class="n">Alley</span><span class="p">(</span><span class="s2">&quot;Strike Zone&quot;</span><span class="p">,</span> <span class="s2">&quot;Downtown&quot;</span><span class="p">,</span> <span class="s2">&quot;Synthetic&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">([</span><span class="n">player</span><span class="p">],</span> <span class="n">alley</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">results</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">simulate_game</span><span class="p">()</span>  <span class="c1"># {&quot;John Doe&quot;: [(roll1, roll2), ...]}</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Score the simulated frames</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">frames</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;John Doe&quot;</span><span class="p">]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;s score: </span><span class="si">{</span><span class="n">Scoring</span><span class="o">.</span><span class="n">traditional</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>For more details on the Python API, see the <a href="../api/">API Documentation</a>.</p>
+<h2 id="command-line-interface-cli">Command Line Interface (CLI)</h2>
+<p>The CLI provides command-line access to VirtualLanes's features through the <code>virtual-lanes</code> command.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># List bowlers</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>virtual-lanes<span class="w"> </span>bowlers<span class="w"> </span>list
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Add a new bowler</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>virtual-lanes<span class="w"> </span>bowlers<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;John Doe&quot;</span><span class="w"> </span><span class="m">180</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Start the web interface</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start
+</code></pre></div>
+<p>For more details on the CLI, see the <a href="../cli/">CLI Documentation</a>.</p>
+<h2 id="terminal-user-interface-tui">Terminal User Interface (TUI)</h2>
+<p>The TUI provides an interactive, dashboard-like interface directly in your terminal.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Start the TUI</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>virtual-lanes<span class="w"> </span>tui<span class="w"> </span>start
+</code></pre></div>
+<p><img alt="VirtualLanes TUI" src="../images/tui_interface.png" /></p>
+<p>For more details on the TUI, see the <a href="../tui/">TUI Documentation</a>.</p>
+<h2 id="web-interface">Web Interface</h2>
+<p>The web interface provides a modern, browser-based graphical interface.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Start the web server</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start
+</code></pre></div>
+<p>Then access http://localhost:8000 in your browser.</p>
+<p><img alt="VirtualLanes Web Interface" src="../images/web_home.png" /></p>
+<p>For more details on the web interface, see the <a href="../web/">Web Interface Documentation</a>.</p>
+<h2 id="switching-between-interfaces">Switching Between Interfaces</h2>
+<p>All interfaces access the same underlying data, so you can switch between them as needed:</p>
+<ol>
+<li>Use the CLI for quick commands and scripting</li>
+<li>Launch the TUI for a more interactive experience</li>
+<li>Start the web interface for team management and visualization</li>
+<li>Use the Python API for custom integrations</li>
+</ol>
+<h2 id="interface-architecture">Interface Architecture</h2>
+<p>VirtualLanes's interfaces are designed as layers on top of the core library:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>│  Web (FastHTML) │ │  TUI (Textual)  │ │     CLI (Typer)   │
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>└───────┬───────┘ └───────┬───────┘ └───────┬───────┘
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        │                 │                 │
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        v                 v                 v
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>┌─────────────────────────────────────────────────┐
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>│                Core VirtualLanes Library             │
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>└─────────────────────────────────────────────────┘
+</code></pre></div>
+<p>This layered architecture ensures consistency across interfaces while allowing each interface to leverage its specific strengths.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cli/" class="btn btn-neutral float-right" title="CLI">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../cli/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

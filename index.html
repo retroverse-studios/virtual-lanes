@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="None" />
       <link rel="shortcut icon" href="img/favicon.ico" />
-    <title>TrueRoll Documentation</title>
+    <title>VirtualLanes Documentation</title>
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href="." class="icon icon-home"> TrueRoll Documentation
+          <a href="." class="icon icon-home"> VirtualLanes Documentation
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -48,6 +48,14 @@
     <li class="toctree-l2"><a class="reference internal" href="#features">Features</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#basic-usage">Basic Usage</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#interfaces">Interfaces</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a>
     </li>
@@ -58,12 +66,23 @@
     </ul>
                 </li>
               </ul>
+              <p class="caption"><span class="caption-text">Interfaces</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="interfaces/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="cli/">CLI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="tui/">TUI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="web/">Web</a>
+                  </li>
+              </ul>
               <ul>
                 <li class="toctree-l1"><a class="reference internal" href="api/">API Documentation</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="contribute/">Contribute</a>
+                <li class="toctree-l1"><a class="reference internal" href="contribute/">Contributing</a>
                 </li>
               </ul>
               <ul>
@@ -77,7 +96,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href=".">TrueRoll Documentation</a>
+          <a href=".">VirtualLanes Documentation</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -93,44 +112,87 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="welcome-to-trueroll">Welcome to TrueRoll</h1>
-<p>TrueRoll is a comprehensive simulation library for ten-pin bowling, designed to model games, analyze player performance, and investigate the impacts of various environmental and personal factors on gameplay.</p>
+                <h1 id="welcome-to-virtuallanes">Welcome to VirtualLanes</h1>
+<p>VirtualLanes is a comprehensive simulation library for ten-pin bowling, designed to model games, analyze player performance, and investigate the impacts of various environmental and personal factors on gameplay.</p>
 <h2 id="overview">Overview</h2>
-<p>Bowling, as a sport, involves numerous variables that can influence the outcome of a game, from the skill level of the players to the characteristics of the bowling alley. TrueRoll aims to provide a realistic and flexible simulation environment where these variables can be controlled and studied. Whether you're a data scientist, a coach, or a bowling enthusiast, TrueRoll offers tools to simulate, analyze, and understand the nuances of ten-pin bowling.</p>
+<p>Bowling, as a sport, involves numerous variables that can influence the outcome of a game, from the skill level of the players to the characteristics of the bowling alley. VirtualLanes aims to provide a realistic and flexible simulation environment where these variables can be controlled and studied. Whether you're a data scientist, a coach, or a bowling enthusiast, VirtualLanes offers tools to simulate, analyze, and understand the nuances of ten-pin bowling.</p>
 <h2 id="features">Features</h2>
-<p>TrueRoll includes several key features:</p>
+<p>VirtualLanes includes several key features:</p>
 <ul>
 <li><strong>Game Simulation:</strong> Simulate complete games with detailed control over player attributes and alley conditions.</li>
 <li><strong>Scoring Systems:</strong> Support for various scoring systems including traditional, current frame, and 9-pin no-tap.</li>
 <li><strong>Statistical Analysis:</strong> Tools to analyze game outcomes, providing insights into performance metrics such as strike rates, spare conversions, and overall scores.</li>
 <li><strong>Data Management:</strong> Integration with a SQLite database to store and retrieve game records, player profiles, and alley specifications for longitudinal studies and performance tracking.</li>
+<li><strong>Multiple Interfaces:</strong> </li>
+<li>Python library for programmatic access</li>
+<li>Command Line Interface (CLI) for quick commands</li>
+<li>Terminal User Interface (TUI) for interactive terminal usage</li>
+<li>Web Interface for a graphical user experience</li>
 <li><strong>Extensibility:</strong> Designed with extensibility in mind, allowing users to add new types of analyses, scoring rules, or even different bowling games like duckpin or candlepin bowling.</li>
 </ul>
 <h2 id="getting-started">Getting Started</h2>
-<p>To get started with TrueRoll, you'll need to have Python installed on your machine, along with Poetry for dependency management. Clone the repository, install dependencies, and you're ready to start simulating your own bowling games.</p>
-<pre><code class="language-bash">git clone https://github.com/yourgithubusername/trueroll.git
-cd trueroll
-poetry install
-</code></pre>
-<p>You can then dive into simulating games or analyzing bowling data by following the examples provided in the documentation.</p>
+<h3 id="installation">Installation</h3>
+<p>Install VirtualLanes using pip:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>virtual-lanes
+</code></pre></div>
+<p>Or install from source:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/michael-borck/virtual-lanes.git
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">cd</span><span class="w"> </span>virtual-lanes
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div>
+<h3 id="basic-usage">Basic Usage</h3>
+<p>Using VirtualLanes as a Python library:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">virtual_lanes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Alley</span><span class="p">,</span> <span class="n">Bowler</span><span class="p">,</span> <span class="n">Game</span><span class="p">,</span> <span class="n">Scoring</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Create one or more bowlers with strike/spare probabilities (0.0 - 1.0)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">player</span> <span class="o">=</span> <span class="n">Bowler</span><span class="p">(</span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span> <span class="n">strike_prob</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">spare_prob</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Create an alley and simulate a game (random_seed makes it reproducible)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">alley</span> <span class="o">=</span> <span class="n">Alley</span><span class="p">(</span><span class="s2">&quot;Strike Zone&quot;</span><span class="p">,</span> <span class="s2">&quot;Downtown&quot;</span><span class="p">,</span> <span class="s2">&quot;Synthetic&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">([</span><span class="n">player</span><span class="p">],</span> <span class="n">alley</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">results</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">simulate_game</span><span class="p">()</span>  <span class="c1"># {&quot;John Doe&quot;: [(roll1, roll2), ...]}</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Score the simulated frames</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">frames</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;John Doe&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">player</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;s score: </span><span class="si">{</span><span class="n">Scoring</span><span class="o">.</span><span class="n">traditional</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Using the CLI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Show CLI help</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>virtual-lanes<span class="w"> </span>--help
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># List bowlers</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>virtual-lanes<span class="w"> </span>bowlers<span class="w"> </span>list
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Start the web interface</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start
+</code></pre></div>
+<h2 id="interfaces">Interfaces</h2>
+<p>VirtualLanes provides multiple ways to interact with the library:</p>
+<ul>
+<li><strong><a href="api/">Python Library</a></strong>: Import and use VirtualLanes as a Python module</li>
+<li><strong><a href="cli/">Command Line Interface</a></strong>: Use the <code>virtual-lanes</code> command in your terminal</li>
+<li><strong><a href="tui/">Terminal User Interface</a></strong>: Interactive terminal-based dashboard</li>
+<li><strong><a href="web/">Web Interface</a></strong>: Browser-based graphical interface</li>
+</ul>
+<p>For more details, see the <a href="interfaces/">Interfaces Overview</a>.</p>
 <h2 id="documentation">Documentation</h2>
 <p>This documentation is structured to help you find what you need:</p>
 <ul>
-<li><strong>Installation Guide:</strong> Detailed instructions on setting up TrueRoll on your system.</li>
-<li><strong>User Guide:</strong> How to use TrueRoll to simulate games and analyze data.</li>
-<li><strong>API Reference:</strong> Comprehensive details about the functions and classes available in TrueRoll.</li>
-<li><strong>Examples:</strong> Practical examples and case studies using TrueRoll.</li>
+<li><strong>Interfaces</strong>: How to interact with VirtualLanes through different interfaces</li>
+<li><strong>API Reference</strong>: Comprehensive details about the functions and classes available in VirtualLanes</li>
+<li><strong>Contributing</strong>: How to contribute to the VirtualLanes project</li>
+<li><strong>Examples</strong>: Practical examples and case studies using VirtualLanes</li>
 </ul>
 <h2 id="contributing">Contributing</h2>
-<p>TrueRoll is an open-source project, and contributions are welcome. Check out the contributing guidelines to see how you can make a difference, whether through code, documentation, or community support.</p>
+<p>VirtualLanes is an open-source project, and contributions are welcome. Check out the <a href="contribute/">contributing guidelines</a> to see how you can make a difference, whether through code, documentation, or community support.</p>
 <h2 id="license">License</h2>
-<p>TrueRoll is released under the MIT license. This choice ensures that the software can be freely used, modified, and shared.</p>
-<p>Thank you for visiting the TrueRoll documentation. We hope you find this project useful for your bowling simulation and analysis needs!</p>
+<p>VirtualLanes is released under the MIT license. This choice ensures that the software can be freely used, modified, and shared.</p>
+<p>Thank you for visiting the VirtualLanes documentation. We hope you find this project useful for your bowling simulation and analysis needs!</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="api/" class="btn btn-neutral float-right" title="API Documentation">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="interfaces/" class="btn btn-neutral float-right" title="Overview">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -154,7 +216,7 @@ poetry install
     
     
     
-      <span><a href="api/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="interfaces/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
@@ -176,6 +238,6 @@ poetry install
 </html>
 
 <!--
-MkDocs version : 1.6.0
-Build Date UTC : 2024-05-14 14:26:20.501716+00:00
+MkDocs version : 1.6.1
+Build Date UTC : 2026-06-15 03:24:44.216905+00:00
 -->

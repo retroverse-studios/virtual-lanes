@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Web - VirtualLanes Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Web";
+        var mkdocs_page_input_path = "web.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> VirtualLanes Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Interfaces</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../interfaces/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tui/">TUI</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Web</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#starting-the-web-interface">Starting the Web Interface</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#via-command-line">Via Command Line</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#via-python-api">Via Python API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#direct-module-execution">Direct Module Execution</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#accessing-the-web-interface">Accessing the Web Interface</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#interface-overview">Interface Overview</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#home-page">Home Page</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#bowlers-section">Bowlers Section</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#games-section">Games Section</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#leagues-section">Leagues Section</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#features">Features</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#htmx-integration">HTMX Integration</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#responsive-design">Responsive Design</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#picocss-styling">PicoCSS Styling</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#development-and-customization">Development and Customization</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#creating-custom-routes">Creating Custom Routes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#custom-styling">Custom Styling</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#extending-templates">Extending Templates</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#api-endpoints">API Endpoints</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#bowlers-api">Bowlers API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#games-api">Games API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#leagues-api">Leagues API</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#security-considerations">Security Considerations</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#common-issues">Common Issues</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contribute/">Contributing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contact/">Contact</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">VirtualLanes Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Interfaces</li>
+      <li class="breadcrumb-item active">Web</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="web-interface">Web Interface</h1>
+<p>VirtualLanes includes a modern, responsive web interface built with FastHTML, providing an easy-to-use graphical interface for managing your bowling data.</p>
+<h2 id="starting-the-web-interface">Starting the Web Interface</h2>
+<p>You can start the web interface in several ways:</p>
+<h3 id="via-command-line">Via Command Line</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start
+</code></pre></div>
+<p>With custom host and port:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
+</code></pre></div>
+<p>Enable debug mode:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start<span class="w"> </span>--debug
+</code></pre></div>
+<h3 id="via-python-api">Via Python API</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">virtual_lanes</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">virtual_lanes</span><span class="o">.</span><span class="n">run_web</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="direct-module-execution">Direct Module Execution</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>-m<span class="w"> </span>virtual_lanes.web.app
+</code></pre></div>
+<h2 id="accessing-the-web-interface">Accessing the Web Interface</h2>
+<p>Once started, the web interface is available at:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>http://localhost:8000
+</code></pre></div>
+<p>(Or the custom host/port you specified)</p>
+<h2 id="interface-overview">Interface Overview</h2>
+<p>The web interface provides a clean, modern layout with the following sections:</p>
+<h3 id="home-page">Home Page</h3>
+<p>The home page provides quick access to the main sections of the application:</p>
+<ul>
+<li>Bowlers</li>
+<li>Games</li>
+<li>Leagues</li>
+</ul>
+<p><img alt="VirtualLanes Web Interface Home" src="../images/web_home.png" /></p>
+<h3 id="bowlers-section">Bowlers Section</h3>
+<p>The Bowlers section allows you to:</p>
+<ul>
+<li>View a list of all bowlers</li>
+<li>See bowler statistics</li>
+<li>Add new bowlers</li>
+<li>Edit existing bowlers</li>
+</ul>
+<p><img alt="VirtualLanes Web Interface Bowlers" src="../images/web_bowlers.png" /></p>
+<h3 id="games-section">Games Section</h3>
+<p>The Games section lets you:</p>
+<ul>
+<li>View all recorded games</li>
+<li>Filter games by bowler, date, or score</li>
+<li>Add new game records</li>
+<li>View detailed game statistics</li>
+</ul>
+<p><img alt="VirtualLanes Web Interface Games" src="../images/web_games.png" /></p>
+<h3 id="leagues-section">Leagues Section</h3>
+<p>The Leagues section enables you to:</p>
+<ul>
+<li>View all leagues</li>
+<li>See league members and statistics</li>
+<li>Create new leagues</li>
+<li>Manage tournament schedules</li>
+</ul>
+<p><img alt="VirtualLanes Web Interface Leagues" src="../images/web_leagues.png" /></p>
+<h2 id="features">Features</h2>
+<h3 id="htmx-integration">HTMX Integration</h3>
+<p>The web interface leverages HTMX for dynamic interactions without full page reloads, providing a smooth, modern user experience.</p>
+<p>Key HTMX features include:</p>
+<ul>
+<li>In-place form submissions</li>
+<li>Dynamic content updates</li>
+<li>Smooth transitions</li>
+<li>No JavaScript needed for most interactions</li>
+</ul>
+<h3 id="responsive-design">Responsive Design</h3>
+<p>The interface is fully responsive, providing optimal viewing and interaction experience across a wide range of devices:</p>
+<ul>
+<li>Desktop computers</li>
+<li>Tablets</li>
+<li>Mobile phones</li>
+</ul>
+<h3 id="picocss-styling">PicoCSS Styling</h3>
+<p>The interface uses the lightweight PicoCSS framework for clean, semantic styling.</p>
+<h2 id="development-and-customization">Development and Customization</h2>
+<h3 id="creating-custom-routes">Creating Custom Routes</h3>
+<p>You can extend the web interface by adding custom routes to the FastHTML application:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">virtual_lanes.web.app</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_app</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">app</span> <span class="o">=</span> <span class="n">create_app</span><span class="p">()</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/custom-path&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">():</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="k">return</span> <span class="n">Titled</span><span class="p">(</span><span class="s2">&quot;Custom Page&quot;</span><span class="p">,</span> 
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">Div</span><span class="p">(</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>            <span class="n">H1</span><span class="p">(</span><span class="s2">&quot;My Custom Page&quot;</span><span class="p">),</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="n">P</span><span class="p">(</span><span class="s2">&quot;This is a custom page added to the VirtualLanes web interface.&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="p">)</span>
+</code></pre></div>
+<h3 id="custom-styling">Custom Styling</h3>
+<p>The application uses PicoCSS by default, but you can customize the styling by adding your own CSS or replacing the default styles.</p>
+<h3 id="extending-templates">Extending Templates</h3>
+<p>The web interface is based on FastHTML components, which you can extend and customize. See the <a href="https://docs.fastht.ml/">FastHTML documentation</a> for details.</p>
+<h2 id="api-endpoints">API Endpoints</h2>
+<p>The web interface also provides JSON API endpoints for programmatic access:</p>
+<h3 id="bowlers-api">Bowlers API</h3>
+<ul>
+<li><code>GET /api/bowlers</code> - List all bowlers</li>
+<li><code>GET /api/bowlers/{id}</code> - Get bowler details</li>
+<li><code>POST /api/bowlers</code> - Create a new bowler</li>
+<li><code>PUT /api/bowlers/{id}</code> - Update a bowler</li>
+</ul>
+<h3 id="games-api">Games API</h3>
+<ul>
+<li><code>GET /api/games</code> - List all games</li>
+<li><code>GET /api/games/{id}</code> - Get game details</li>
+<li><code>POST /api/games</code> - Add a new game</li>
+<li><code>PUT /api/games/{id}</code> - Update a game</li>
+</ul>
+<h3 id="leagues-api">Leagues API</h3>
+<ul>
+<li><code>GET /api/leagues</code> - List all leagues</li>
+<li><code>GET /api/leagues/{id}</code> - Get league details</li>
+<li><code>POST /api/leagues</code> - Create a new league</li>
+<li><code>PUT /api/leagues/{id}</code> - Update a league</li>
+</ul>
+<h2 id="security-considerations">Security Considerations</h2>
+<p>The web interface is designed for local network use. If you're exposing it to the public internet, consider:</p>
+<ol>
+<li>Setting up proper authentication</li>
+<li>Using HTTPS</li>
+<li>Placing it behind a reverse proxy like Nginx</li>
+<li>Implementing rate limiting</li>
+</ol>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<ol>
+<li><strong>Port already in use</strong></li>
+</ol>
+<p>If port 8000 is already in use, specify a different port:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
+</code></pre></div>
+<ol>
+<li><strong>Permission denied</strong></li>
+</ol>
+<p>On Linux/macOS, ports below 1024 require elevated privileges:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>sudo<span class="w"> </span>virtual-lanes<span class="w"> </span>web<span class="w"> </span>start<span class="w"> </span>--port<span class="w"> </span><span class="m">80</span>
+</code></pre></div>
+<ol>
+<li><strong>Address already in use</strong></li>
+</ol>
+<p>You may already have a VirtualLanes web server running. Check with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>virtual-lanes
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../tui/" class="btn btn-neutral float-left" title="TUI"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../api/" class="btn btn-neutral float-right" title="API Documentation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../tui/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../api/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
