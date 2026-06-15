@@ -68,6 +68,37 @@ VirtualLanes until then.
 - **Stays in the one PWA** (not standalone): shares the `Game` history; a Trace can sit beside the
   shot you journaled in Journal.
 
+### Build strategy (de-risked, staged — prototype in `prototype/trace.html`)
+Each stage is independently testable; **manual calibration first, auto-detect later**:
+0. **Plumbing** — import a clip, step/scrub frames to a canvas (seek, or `requestVideoFrameCallback`).
+1. **Manual calibration** — user taps 4 lane corners (foul-L, foul-R, pins-L, pins-R). This *is* the
+   "is it a lane?" check — no separate classifier.
+2. **Homography** — 4-point DLT (~40 lines, no library) maps image → top-down (39 boards × 60 ft).
+3. **Ball track (classical, NOT ML)** — frame-difference → largest moving **connected blob** centroid
+   per frame. The ball is the dominant motion on a static lane. Restrict to the calibrated lane region
+   and ignore pre-release frames (the arm). Interpolate blur gaps.
+4. **Derive** — map track through H → laydown / breakpoint / entry board+angle / pocket; speed from
+   distance ÷ time. **Relative > absolute**; revs deferred (single-colour ball can't show rotation).
+5. **Later** — auto lane-detect (Canny/Hough), live mode, OpenCV.js/WASM if robustness needs it, ML
+   detector trained on accumulated user clips.
+Tooling: hand-rolled canvas diff + homography keeps the bundle small; reach for OpenCV.js only for
+auto-detect/MOG2. fps: import a **slow-mo clip** (web getUserMedia can't access 120/240fps). Camera
+must be propped (static-background assumption).
+
+### Data shapes (sketch)
+```ts
+interface TracePoint { t: number; img: [number, number]; lane: [number, number]; } // lane = [board, ft]
+interface TraceCalibration { corners: [[number,number],[number,number],[number,number],[number,number]]; homography: number[]; }
+interface TraceResult {
+  id: string; date: string; clipName?: string;
+  calibration: TraceCalibration;
+  track: TracePoint[];
+  metrics: { laydownBoard: number; breakpointBoard: number; breakpointFt: number; entryBoard: number; entryAngle: number; speedMph: number; revsEstimated?: number; };
+  handedness: 'left' | 'right'; // flips breakpoint logic
+  note?: string; gameId?: string; frame?: number; // optional link to a game/frame (shared model)
+}
+```
+
 ## Platform & architecture
 
 - **One PWA, two modes** — not two apps. PWA storage is partitioned per origin, so one origin =

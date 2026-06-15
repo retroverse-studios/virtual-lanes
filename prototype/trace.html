@@ -1,0 +1,191 @@
+<!doctype html>
+<!--
+  THROWAWAY PROTOTYPE — Trace de-risking.
+  Proves the risky CV chain on a REAL clip, all in-browser, no libraries:
+    0) import a video, step/scrub frames
+    1) tap 4 lane corners (foul-L, foul-R, pins-L, pins-R)
+    2) compute a 4-point homography (image -> top-down lane)
+    3) scan the clip: frame-difference -> largest moving blob centroid per frame
+    4) map the track to top-down boards/distance; rough laydown/breakpoint/entry/speed
+  Goal: answer "does ball-finding + calibration actually work on my phone clip?"
+  Run: python3 -m http.server 8000 -d prototype  →  /trace.html  (open the clip from your phone)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>VirtualLanes — Trace (prototype)</title>
+<style>
+  :root{--bg:#0b1020;--panel:#151b30;--line:#2b3556;--ink:#eef1fb;--dim:#9aa6cc;--accent:#6c8cff;--me:#46d39a;--gold:#ffce4d}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,system-ui,sans-serif;padding:12px;max-width:760px;margin:0 auto}
+  h1{font-size:18px}.dim{color:var(--dim)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+  button,label.file{background:var(--panel2,#1d2640);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 13px;font:inherit;cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  button:disabled{opacity:.4}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+  .stage h2{font-size:14px;margin:0 0 8px}
+  canvas{max-width:100%;background:#000;border-radius:8px;display:block;touch-action:none}
+  #topwrap{display:flex;gap:12px;flex-wrap:wrap}
+  .metric{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:4px 6px 0 0}
+  .metric b{color:var(--gold);font-size:18px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .pill{font-size:12px;color:var(--gold)}
+  ol{padding-left:18px}
+</style>
+</head>
+<body>
+<h1>🎥 Trace — CV de-risk prototype</h1>
+<p class="dim">Prop your phone down the lane, film one shot (slow-mo ideal), then load the clip here.</p>
+
+<div class="stage">
+  <h2>1 · Load a clip</h2>
+  <div class="row">
+    <label class="file">📁 Choose video<input type="file" accept="video/*" id="file" hidden></label>
+    <span id="vinfo" class="dim">no clip loaded</span>
+  </div>
+  <input type="range" id="scrub" min="0" max="0" step="0.01" value="0" disabled>
+  <div class="row dim" id="frameinfo"></div>
+</div>
+
+<div class="stage">
+  <h2>2 · Tap the 4 lane corners</h2>
+  <p class="dim">On the frame below tap, in order: <b>foul line — left</b>, <b>foul line — right</b>, <b>pin deck — left</b>, <b>pin deck — right</b>. Tap again to redo. <span id="calstate" class="pill"></span></p>
+  <canvas id="frame" width="640" height="360"></canvas>
+  <div class="row"><button id="reset">↺ Reset corners</button><button id="calib" class="primary" disabled>Compute homography →</button></div>
+</div>
+
+<div class="stage" id="tdstage" style="display:none">
+  <h2>3 · Top-down + ball scan</h2>
+  <div id="topwrap">
+    <canvas id="top" width="160" height="480"></canvas>
+    <div>
+      <button id="scan" class="primary">▶ Scan clip for ball</button>
+      <p class="dim" id="scaninfo">Frame-diff finds the largest moving blob each frame.</p>
+      <div id="metrics"></div>
+    </div>
+  </div>
+</div>
+
+<video id="vid" playsinline muted style="display:none"></video>
+
+<script>
+const $=id=>document.getElementById(id);
+const vid=$('vid'), fcanvas=$('frame'), fctx=fcanvas.getContext('2d',{willReadFrequently:true});
+const tcanvas=$('top'), tctx=tcanvas.getContext('2d');
+let corners=[];               // tapped points in VIDEO pixel coords [ [x,y] x4 ]
+let H=null;                   // homography video->topdown
+const TD_W=160, TD_H=480;     // top-down canvas: 39 boards wide, 60ft tall (pins at top, foul at bottom)
+// destination corners matching tap order: foulL, foulR, pinsL, pinsR
+const DST=[[0,TD_H],[TD_W,TD_H],[0,0],[TD_W,0]];
+
+/* ---------- load + scrub ---------- */
+$('file').onchange=e=>{const f=e.target.files[0]; if(!f)return; vid.src=URL.createObjectURL(f);
+  vid.onloadedmetadata=()=>{ $('vinfo').textContent=`${vid.videoWidth}×${vid.videoHeight}, ${vid.duration.toFixed(1)}s`;
+    $('scrub').max=vid.duration; $('scrub').disabled=false; fitCanvas(); vid.currentTime=Math.min(0.1,vid.duration); };};
+$('scrub').oninput=e=>{ vid.currentTime=+e.target.value; };
+vid.onseeked=()=>{ drawFrame(); $('frameinfo').textContent=`t=${vid.currentTime.toFixed(2)}s`; };
+
+function fitCanvas(){ // display canvas at video aspect, capped width
+  const maxW=Math.min(640, window.innerWidth-26), s=maxW/vid.videoWidth;
+  fcanvas.width=vid.videoWidth; fcanvas.height=vid.videoHeight;
+  fcanvas.style.width=maxW+'px'; fcanvas.style.height=(vid.videoHeight*s)+'px';
+}
+function drawFrame(){ fctx.drawImage(vid,0,0,fcanvas.width,fcanvas.height); drawOverlay(); }
+function drawOverlay(){
+  fctx.lineWidth=Math.max(2,fcanvas.width/300); fctx.strokeStyle='#46d39a'; fctx.fillStyle='#ffce4d';
+  corners.forEach((p,i)=>{ fctx.beginPath(); fctx.arc(p[0],p[1],fcanvas.width/90,0,7); fctx.fill();
+    fctx.fillStyle='#fff'; fctx.font=`${fcanvas.width/40}px sans-serif`; fctx.fillText(['FL','FR','PL','PR'][i],p[0]+8,p[1]); fctx.fillStyle='#ffce4d'; });
+  if(corners.length===4){ fctx.beginPath(); const o=[0,1,3,2]; o.forEach((idx,k)=>{const p=corners[idx]; k?fctx.lineTo(p[0],p[1]):fctx.moveTo(p[0],p[1]);}); fctx.closePath(); fctx.stroke(); }
+  $('calstate').textContent=`${corners.length}/4 tapped`;
+  $('calib').disabled=corners.length!==4;
+}
+fcanvas.onclick=e=>{ if(!vid.videoWidth)return; const r=fcanvas.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width*fcanvas.width, y=(e.clientY-r.top)/r.height*fcanvas.height;
+  if(corners.length>=4) corners=[]; corners.push([x,y]); drawFrame(); };
+$('reset').onclick=()=>{corners=[];drawFrame();};
+
+/* ---------- 4-point homography ---------- */
+function gauss(A,b){const n=b.length,M=A.map((r,i)=>[...r,b[i]]);
+  for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;[M[c],M[p]]=[M[p],M[c]];
+    const piv=M[c][c]||1e-9;for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c]/piv;for(let k=c;k<=n;k++)M[r][k]-=f*M[c][k];}}
+  return M.map((r,i)=>r[n]/(r[i]||1e-9));}
+function solveH(src,dst){const A=[],b=[];for(let i=0;i<4;i++){const[x,y]=src[i],[u,v]=dst[i];
+  A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v);}
+  const h=gauss(A,b);return[h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7],1];}
+function applyH(H,x,y){const w=H[6]*x+H[7]*y+H[8];return[(H[0]*x+H[1]*y+H[2])/w,(H[3]*x+H[4]*y+H[5])/w];}
+
+$('calib').onclick=()=>{ H=solveH(corners,DST); $('tdstage').style.display='block'; drawTop([]); $('tdstage').scrollIntoView({behavior:'smooth'}); };
+
+/* ---------- top-down render ---------- */
+function drawTop(track){
+  tctx.fillStyle='#0d1326'; tctx.fillRect(0,0,TD_W,TD_H);
+  tctx.strokeStyle='#2b3556'; tctx.strokeRect(0,0,TD_W,TD_H);
+  // boards every ~5, arrows ~15ft, pocket ~board 17.5
+  tctx.strokeStyle='#1d2640'; for(let bd=0;bd<=39;bd+=5){const x=bd/39*TD_W; tctx.beginPath();tctx.moveTo(x,0);tctx.lineTo(x,TD_H);tctx.stroke();}
+  tctx.fillStyle='#9aa6cc'; tctx.font='9px sans-serif'; tctx.fillText('pins',4,12); tctx.fillText('foul',4,TD_H-6);
+  tctx.fillStyle='#ff7a59'; tctx.fillRect(17.5/39*TD_W-2,0,4,6); // pocket marker (RH ~17.5)
+  // arrows line
+  tctx.strokeStyle='#2b3556'; tctx.beginPath(); const ay=(60-15)/60*TD_H; tctx.moveTo(0,ay);tctx.lineTo(TD_W,ay);tctx.stroke();
+  if(track.length){ tctx.strokeStyle='#46d39a'; tctx.lineWidth=2; tctx.beginPath();
+    track.forEach((p,i)=>{i?tctx.lineTo(p[0],p[1]):tctx.moveTo(p[0],p[1]);}); tctx.stroke();
+    track.forEach(p=>{tctx.fillStyle='#ffce4d';tctx.beginPath();tctx.arc(p[0],p[1],2,0,7);tctx.fill();}); }
+}
+
+/* ---------- ball scan: frame-diff + largest connected blob ---------- */
+const SW=192; let SH=108; // downscaled processing size
+const work=document.createElement('canvas'); let wctx;
+function gray(img){const g=new Uint8Array(img.width*img.height);for(let i=0;i<g.length;i++){const j=i*4;g[i]=(img.data[j]*0.3+img.data[j+1]*0.59+img.data[j+2]*0.11)|0;}return g;}
+function largestBlob(mask,w,h){ // 4-conn flood fill, return {cx,cy,size} of biggest
+  const seen=new Uint8Array(w*h); let best={size:0,cx:0,cy:0};
+  for(let i=0;i<mask.length;i++){ if(!mask[i]||seen[i])continue; let sx=0,sy=0,n=0; const st=[i];
+    while(st.length){const c=st.pop();if(seen[c]||!mask[c])continue;seen[c]=1;const cx=c%w,cy=(c/w)|0;sx+=cx;sy+=cy;n++;
+      if(cx>0)st.push(c-1);if(cx<w-1)st.push(c+1);if(cy>0)st.push(c-w);if(cy<h-1)st.push(c+w);}
+    if(n>best.size)best={size:n,cx:sx/n,cy:sy/n}; }
+  return best;
+}
+$('scan').onclick=async()=>{
+  if(!H){return;} const track=[]; const raw=[]; SH=Math.round(SW*vid.videoHeight/vid.videoWidth); work.width=SW;work.height=SH;wctx=work.getContext('2d',{willReadFrequently:true});
+  let prev=null; $('scan').disabled=true; $('scaninfo').textContent='scanning…';
+  vid.pause(); vid.currentTime=0;
+  await new Promise(r=>vid.onseeked=r); vid.onseeked=null;
+  const step=1/30; // sample ~30fps
+  for(let t=0;t<vid.duration;t+=step){
+    vid.currentTime=t; await new Promise(r=>{vid.onseeked=r;});
+    wctx.drawImage(vid,0,0,SW,SH); const cur=gray(wctx.getImageData(0,0,SW,SH));
+    if(prev){ const mask=new Uint8Array(cur.length); let any=0;
+      for(let i=0;i<cur.length;i++){ if(Math.abs(cur[i]-prev[i])>28){mask[i]=1;any++;} }
+      if(any>4){ const b=largestBlob(mask,SW,SH);
+        if(b.size>3){ const vx=b.cx/SW*vid.videoWidth, vy=b.cy/SH*vid.videoHeight; // -> video px
+          const td=applyH(H,vx,vy);
+          if(td[0]>=-20&&td[0]<=TD_W+20&&td[1]>=-20&&td[1]<=TD_H+20){ raw.push({t,td}); } } } }
+    prev=cur;
+  }
+  vid.onseeked=null;
+  // keep points that progress down the lane (toward pins = decreasing td.y), simple monotonic filter
+  raw.sort((a,b)=>a.t-b.t);
+  raw.forEach(p=>track.push(p.td));
+  drawTop(track);
+  showMetrics(raw);
+  $('scan').disabled=false; $('scaninfo').textContent=`scanned · ${raw.length} ball points`;
+};
+
+function showMetrics(raw){
+  const m=$('metrics'); if(raw.length<3){m.innerHTML='<span class="dim">too few points — try a clearer/slower clip or re-tap corners</span>';return;}
+  const board=td=>Math.round(td[0]/TD_W*39);
+  // foul = max td.y (bottom), pins = min td.y (top)
+  const near=raw.reduce((a,b)=>b.td[1]>a.td[1]?b:a);
+  const far=raw.reduce((a,b)=>b.td[1]<a.td[1]?b:a);
+  const bp=raw.reduce((a,b)=>b.td[0]>a.td[0]?b:a); // max board excursion (RH hook); flip for LH
+  const ftPerY=60/TD_H;
+  const dist=Math.hypot(far.td[0]-near.td[0],(far.td[1]-near.td[1]))*ftPerY;
+  const dt=Math.abs(far.t-near.t)||1; const mph=(dist/dt)*0.6818;
+  m.innerHTML=`
+    <span class="metric">laydown <b>${board(near.td)}</b></span>
+    <span class="metric">breakpoint <b>${board(bp.td)}</b></span>
+    <span class="metric">entry <b>${board(far.td)}</b></span>
+    <span class="metric">speed <b>${mph.toFixed(1)}</b> mph</span>
+    <div class="dim" style="margin-top:6px">Rough &amp; relative — calibration + blur make absolute boards approximate. Breakpoint assumes a right-hander.</div>`;
+}
+</script>
+</body>
+</html>
