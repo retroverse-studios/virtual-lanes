@@ -56,4 +56,6 @@ no real names/likenesses/brands shipped; users may mimic a champion's stats for 
 not a bowling-specific rule — so we model revs/speed and don't encode gender at all (avoids the debate
 and is fairer). Sane defaults untouched; Advanced drawer for pattern/handicap/breakdown/traffic.
 
-**VERDICT:** _(pending — which layout (A/B/C), and does the style/condition/breakdown model feel real?)_
+**VERDICT:** Layout **B (VS duel)** chosen — its tap-the-pins entry can capture *which* pins
+are left/knocked, enabling spare/leave/split analysis. Next: upgrade the pin deck to a true
+**positional** deck (per-ball standing-pin masks) and carry B into the real PWA.

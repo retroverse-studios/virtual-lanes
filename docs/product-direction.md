@@ -83,10 +83,20 @@ names/likenesses.
   exposed on sport), Sport Stacy (~230, holds up on sport).
 - **Create-your-own** bowlers (rev/speed/acc/cons sliders) and balls (cover/core).
 
+## Decision: bowl-off layout = B (VS duel)
+
+Chosen partly for analysis value: B's **tap-the-pins entry can record *which* pins are
+left/knocked**, not just a count — enabling spare conversion, leave frequency, and split-rate stats.
+
+- **Upgrade required:** the prototype's pin deck is a count-picker. A **true positional pin deck**
+  (per-ball standing-pin state) is needed to actually capture leaves.
+- **Data-model implication:** store per-ball **pin masks** in the `Game` frames (10-bit standing/
+  fallen per ball). Score still derives from the count (popcount); analytics derive from the masks
+  (spare conversion by leave, split rate, most-common leaves). Overlaps directly with LaneRead's
+  planned pin-deck feature — another reason the two modes share one `Game` record.
+
 ## Open questions
 
-- **Which bowl-off screen layout** (A Alley scoreboard / B VS duel / C One-thumb feed) to carry
-  into the real PWA. Decide by feel on a phone.
 - Does the house↔sport swing and the ball-change moment feel real?
 
 ## Existing assets
