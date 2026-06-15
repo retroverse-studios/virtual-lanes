@@ -8,6 +8,7 @@
 	const TABS = [
 		{ href: '/bowloff', ic: '🎳', label: 'Bowl-off' },
 		{ href: '/lane-read', ic: '📖', label: 'Lane Read' },
+		{ href: '/trace', ic: '🎥', label: 'Trace' },
 		{ href: '/history', ic: '📊', label: 'History' },
 		{ href: '/settings', ic: '⚙️', label: 'Settings' }
 	];

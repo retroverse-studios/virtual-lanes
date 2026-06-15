@@ -15,5 +15,10 @@
 		<div class="d">Journal your real shots — what you saw, decided, and what happened.</div>
 	</a>
 
+	<a class="tile trace" href="/trace">
+		<div class="t">Trace <span class="badge">soon</span></div>
+		<div class="d">Film a shot — auto-track the ball to show laydown, breakpoint, pocket and a top-down path.</div>
+	</a>
+
 	<p class="minor">One game, one history. Switch anytime from the tabs.</p>
 </div>

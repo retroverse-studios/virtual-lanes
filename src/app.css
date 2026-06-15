@@ -117,6 +117,21 @@ button {
 .tile.study {
 	border-color: rgba(70, 211, 154, 0.5);
 }
+.tile.trace {
+	border-color: rgba(255, 206, 77, 0.45);
+}
+.tile .badge {
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--gold);
+	border: 1px solid var(--gold);
+	border-radius: 999px;
+	padding: 1px 7px;
+	vertical-align: middle;
+	margin-left: 6px;
+}
 .launch .minor {
 	text-align: center;
 	color: var(--dim);

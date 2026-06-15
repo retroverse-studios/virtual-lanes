@@ -6,15 +6,35 @@
 
 ## Vision
 
-A **phone-first bowling companion** for real bowlers, with two modes:
+A **phone-first bowling companion** for real bowlers, with three modes:
 
 1. **Bowl-off (Compete)** — you bowl your *real* frames at the alley; a chosen rival is
    *simulated* and revealed frame-by-frame beside you. Live head-to-head. Makes practice fun
    and competitive. (Prototype: `prototype/bowl-off.html`.)
 2. **Lane Read (Study)** — journal *real* shots: what you saw → decided → happened (V/X vs
    video), find misread patterns. (Exists today as **LaneRead**, deployed at laneread.com.)
+3. **Trace (Measure)** — *coming soon.* Film a shot; auto-track the ball to show laydown,
+   breakpoint, entry angle, pocket and a top-down path, plus speed (and best-effort revs).
 
-You never simulate the human in either mode — you enter your real rolls/observations.
+You never simulate the human — you enter your real rolls/observations or film a real shot.
+Naming: **Lane Read** = the *subjective* read (what you thought); **Trace** = the *objective*
+measurement (what actually happened) — the automated version of LaneRead's video-comparison step.
+
+## Mode 3 — Trace (camera ball tracking)
+
+- **No photogrammetry needed:** the lane is a known flat plane → a **homography** maps the camera
+  view to a true top-down. Reference points from lane edges + foul line + pin deck.
+- **Lane geometry:** 39 boards wide (~41.5″), 60 ft foul-line→headpin, arrows at 15 ft.
+- **Outputs:** laydown board, breakpoint, entry board/angle, pocket; top-down trace (early/mid/
+  backend); **ball speed** from frame timing; **revs estimated** (hard on a solid-colour ball —
+  needs a visible marking, else inferred from hook shape). Mark estimates honestly.
+- **Relative > absolute:** compare a shot to the bowler's own averages from the same setup.
+- **v1 flow = import a slow-mo clip** (filmed with the native camera), analyse frames in-browser
+  (`<video>` + canvas + `requestVideoFrameCallback`, OpenCV.js/WASM). Web `getUserMedia` can't
+  reach phone slow-mo (120/240fps) and caps ~30fps, so live point-and-overlay is deferred —
+  that's the only part that really wants native (Capacitor camera bridge later).
+- **Stays in the one PWA** (not standalone): shares the `Game` history; a Trace can sit beside the
+  shot you journaled in Lane Read.
 
 ## Platform & architecture
 
