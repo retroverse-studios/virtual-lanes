@@ -14,17 +14,22 @@ split stats; **rivals optional → solo game tracking**), History (shared `GameR
 strike%, first-ball avg, spare/makable/split %, most-left pins, by pattern/volume/length),
 **PWA** (manifest, icons, offline SW). **Placeholder:** Trace (camera — coming soon).
 
+### Done since
+- **Arsenal** — create/edit/delete balls (cover/core/weight/surface/layout) + stock balls with
+  hide/show. Profile gained handedness + grip. Sim reads coverstock; rest is record-keeping/ML fuel.
+- **Phase 2 (unified session)** — DONE. Bowl-off + Journal are lenses on one shared session:
+  per-frame **post-it journal** (sparse/optional), per-frame **ball + ball changes**, and a single
+  merged history record (score + notes + ball-downs). By-ball stats breakdown added.
+
 ### Next / backlog
-- **Phase 2 — unified shadow session:** one always-present session; Bowl-off + Journal are lenses
-  on the same frames. Per-frame journal is **sparse/optional** (only the important frames, not all).
-  Finishing saves ONE combined history entry (the layers you used; unused layers stay empty).
-  Rivals already decoupled (Phase 1 done). Capture the human's **ball** per game → enables a
-  by-ball stats breakdown.
-- **Future — ML on journal data:** the journal is a labelled dataset (read/decision → actual
-  outcome/leave). Once enough is logged: k-NN ("situations like this, X worked"), decision-tree
-  adjustment suggestions, misread-pattern matching. Requirement: keep capturing **structured**
-  journal fields **linked to frame outcomes** — which Phase 2's per-frame model provides for free.
-- Trace (camera ball-tracking); attach `virtuallanes.app`; create-your-own ball in Bowl-off.
+- **Centre manager** (future, physics-neutral): a managed collection like Rivals/Arsenal — stock +
+  custom + hide/show, generic/no real names. Fields: lanes, pinsetter (free-fall/string), approach
+  length, ball-return proximity, location. Only enriches the descriptive `alley` field on a session;
+  does NOT touch the engine.
+- **ML on journal data** (future): journal = labelled dataset (read/decision → actual leave/outcome,
+  now linked per-frame). k-NN ("situations like this, X worked"), decision-tree adjustment
+  suggestions, misread-pattern matching. Keep capturing structured, frame-linked data (Phase 2 does).
+- **Trace** (camera ball-tracking); attach `virtuallanes.app`; fold roster/arsenal into export/import.
 
 ## Vision
 
