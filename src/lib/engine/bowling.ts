@@ -28,7 +28,7 @@ export function derive(attr: Attr, tierMult: number): SimParams {
 }
 
 /** ball coverstock shifts friction comfort: urethane/plastic add control on the dry */
-export const BALL_BIAS: Record<Cover, number> = { solid: -0.02, pearl: 0, urethane: 0.12, plastic: 0.2 };
+export const BALL_BIAS: Record<Cover, number> = { solid: -0.02, hybrid: 0.03, pearl: 0, urethane: 0.12, plastic: 0.2 };
 
 export function eff(p: SimParams, friction: number, sport: boolean, ballBias = 0) {
 	const ideal = p.idealFriction + ballBias;
@@ -54,7 +54,7 @@ const LEN_ADJ = { short: 0.1, medium: 0, long: -0.06 } as const;
 export const initialFriction = (c: LaneCondition) =>
 	clamp(VOL_FRICTION[c.volume] + LEN_ADJ[c.length] + (c.surface === 'wood' ? 0.05 : 0), 0.1, 0.85);
 
-const COVER_OILMOVE: Record<Cover, number> = { plastic: 0.4, urethane: 0.7, solid: 1.1, pearl: 1.2 };
+const COVER_OILMOVE: Record<Cover, number> = { plastic: 0.4, urethane: 0.7, solid: 1.1, hybrid: 1.15, pearl: 1.2 };
 
 export function breakdownRate(
 	onLane: { attr: Attr; ball: Ball }[],

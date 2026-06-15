@@ -65,6 +65,24 @@
 			</div>
 		</div>
 	</div>
+	<div class="row2">
+		<div class="field">
+			<span class="fl">Handedness</span>
+			<div class="seg">
+				{#each [['right', 'Right'], ['left', 'Left']] as [v, l] (v)}
+					<button class:on={g.human.handedness === v} onclick={() => { g.human.handedness = v as typeof g.human.handedness; g.saveSetup(); }}>{l}</button>
+				{/each}
+			</div>
+		</div>
+		<div class="field">
+			<span class="fl">Grip</span>
+			<div class="seg">
+				{#each [['one', '1-handed'], ['two', '2-handed']] as [v, l] (v)}
+					<button class:on={g.human.grip === v} onclick={() => { g.human.grip = v as typeof g.human.grip; g.saveSetup(); }}>{l}</button>
+				{/each}
+			</div>
+		</div>
+	</div>
 	<div class="field"><label for="alley">Default home alley</label><input id="alley" bind:value={g.cond.alley} oninput={() => g.saveSetup()} /></div>
 
 	<div class="sec">Data</div>
@@ -79,8 +97,11 @@
 	{#if importMsg}<div class="msg">{importMsg}</div>{/if}
 	<button class="cta danger" onclick={() => confirm('Delete ALL saved games on this device? This cannot be undone.') && history.clear()} disabled={!history.games.length}>Clear all data</button>
 
-	<div class="sec">Rivals</div>
-	<a class="cta sub" href="/rivals" style="text-decoration:none">Create &amp; manage rivals →</a>
+	<div class="sec">Equipment &amp; rivals</div>
+	<div class="btns">
+		<a class="cta sub" href="/arsenal" style="text-decoration:none">🎳 My arsenal →</a>
+		<a class="cta sub" href="/rivals" style="text-decoration:none">👤 Rivals →</a>
+	</div>
 
 	<div class="sec">About</div>
 	<div class="soon">VirtualLanes v0.1 · offline-first PWA. Your data lives only on this device — use Export to back it up or move it to another phone.</div>

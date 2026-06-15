@@ -3,8 +3,23 @@
 
 export type StyleKey = 'straight' | 'stroker' | 'tweener' | 'cranker' | 'twoHand' | 'custom';
 export type TierKey = 'rookie' | 'club' | 'pro' | 'elite';
-export type Cover = 'plastic' | 'urethane' | 'solid' | 'pearl';
+export type Cover = 'plastic' | 'urethane' | 'solid' | 'pearl' | 'hybrid';
 export type Core = 'symmetric' | 'asymmetric';
+
+/** A ball in the bowler's arsenal. The sim reads `cover` (+`surface`); the rest is
+ * record-keeping (and fuel for future fidelity / ML). */
+export interface ArsenalBall {
+	id: string;
+	name: string;
+	cover: Cover;
+	core: Core;
+	weight: number; // lb
+	surface: string; // e.g. "2000 grit", "polished"
+	rg?: number;
+	diff?: number;
+	layout?: string; // e.g. "4 x 4 x 2"
+	note?: string;
+}
 export type Division = 'open' | 'pba' | 'pwba';
 
 /** The causal levers. Style presets just fill these in. */

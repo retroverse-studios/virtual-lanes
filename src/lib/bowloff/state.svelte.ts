@@ -27,6 +27,8 @@ interface HumanProfile {
 	avg: number;
 	division: 'open' | 'pba' | 'pwba';
 	handicap: number;
+	handedness: 'left' | 'right';
+	grip: 'one' | 'two';
 }
 interface Cfg {
 	breakdown: boolean;
@@ -63,7 +65,7 @@ class BowlOff {
 		surface: 'synthetic',
 		patternType: 'house'
 	});
-	human = $state<HumanProfile>({ name: 'You', styleKey: 'stroker', avg: 165, division: 'open', handicap: 0 });
+	human = $state<HumanProfile>({ name: 'You', styleKey: 'stroker', avg: 165, division: 'open', handicap: 0, handedness: 'right', grip: 'one' });
 	selectedIds = $state<string[]>(['halv', 'reyes']);
 	cfg = $state<Cfg>({ breakdown: true, laneMode: 'bySelection', manualCount: 4, hcpMode: 'scratch', hcpPct: 90, hcpBasis: 220 });
 
@@ -90,10 +92,10 @@ class BowlOff {
 		try {
 			const s = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null');
 			if (!s) return;
-			if (s.cond) this.cond = s.cond;
-			if (s.human) this.human = s.human;
+			if (s.cond) this.cond = { ...this.cond, ...s.cond };
+			if (s.human) this.human = { ...this.human, ...s.human };
 			if (Array.isArray(s.selectedIds)) this.selectedIds = s.selectedIds.filter((id: string) => this.roster.some((r) => r.id === id));
-			if (s.cfg) this.cfg = s.cfg;
+			if (s.cfg) this.cfg = { ...this.cfg, ...s.cfg };
 		} catch {
 			/* ignore corrupt setup */
 		}
