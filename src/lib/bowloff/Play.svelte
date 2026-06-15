@@ -5,7 +5,7 @@
 	import BallPicker from './BallPicker.svelte';
 	import { glyphs, lastTotal, ALLPINS, PIN_ROWS } from '$lib/engine/bowling';
 
-	let noteTarget = $derived(Math.min(Math.max(g.revealed - 1, 0), 9));
+	const tenFrames = Array.from({ length: 10 }, (_, i) => i);
 
 	let meTot = $derived(lastTotal(g.humanFrames));
 	let solo = $derived(g.opponents.length === 0);
@@ -48,9 +48,16 @@
 		<button class="ballbar" onclick={() => (g.ballPickerOpen = true)}>🎳 {g.currentBall.name}<span class="sw">🔄 switch</span></button>
 	{/if}
 	<div class="leavestat">{leaveLine}</div>
-	<button class="notebtn" onclick={() => g.openNote(noteTarget)}>
-		{g.notes[noteTarget] ? `📝 Edit frame ${noteTarget + 1} note` : `📝 Note frame ${noteTarget + 1}`}{g.noteCount ? ` · ${g.noteCount} logged` : ''}
-	</button>
+	<div class="strip">
+		{#each tenFrames as i (i)}
+			<button class="fcell" class:cur={i === Math.min(g.curIdx, 9)} class:noted={!!g.notes[i]} disabled={i > g.curIdx} onclick={() => g.openNote(i)}>
+				<span class="fn">{i + 1}</span>
+				<span class="mk">{glyphs(g.humanFrames[i], i === 9).join('') || '·'}</span>
+				<span class="nd">{g.notes[i] ? '📝' : ''}</span>
+			</button>
+		{/each}
+	</div>
+	<div class="striphint">tap a frame to note it{g.noteCount ? ` · ${g.noteCount} logged` : ''}</div>
 
 	<div class="deck">
 		{#each PIN_ROWS as row, ri (ri)}
@@ -149,16 +156,50 @@
 		color: var(--dim);
 		margin-bottom: 4px;
 	}
-	.notebtn {
-		width: 100%;
-		border: 1px dashed var(--line);
-		border-radius: 12px;
-		padding: 10px;
-		color: var(--gold);
-		background: transparent;
-		font-weight: 600;
-		font-size: 13px;
-		margin-bottom: 8px;
+	.strip {
+		display: flex;
+		gap: 3px;
+	}
+	.fcell {
+		flex: 1;
+		min-width: 0;
+		background: var(--panel);
+		border: 1px solid var(--line);
+		border-radius: 7px;
+		padding: 4px 0 3px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1px;
+	}
+	.fcell:disabled {
+		opacity: 0.35;
+	}
+	.fcell.cur {
+		outline: 2px solid var(--accent);
+	}
+	.fcell.noted {
+		border-color: var(--gold);
+	}
+	.fcell .fn {
+		font-size: 9px;
+		color: var(--dim);
+	}
+	.fcell .mk {
+		font-size: 12px;
+		font-weight: 700;
+		height: 15px;
+		letter-spacing: 1px;
+	}
+	.fcell .nd {
+		font-size: 9px;
+		height: 12px;
+	}
+	.striphint {
+		text-align: center;
+		font-size: 11px;
+		color: var(--dim);
+		margin: 5px 0 8px;
 	}
 	.ballbar {
 		width: 100%;
