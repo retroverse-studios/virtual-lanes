@@ -76,8 +76,19 @@ export interface Leave {
 	split: boolean;
 }
 
+/** One journaled shot: what you saw → decided → happened (the Journal mode). */
+export interface JournalShot {
+	saw: string; // what the lane/ball did
+	reaction: '' | 'early' | 'mid' | 'late'; // when it hooked
+	result: string; // what happened (strike, 10-pin, washout, …)
+	adjustments: string[]; // what you changed: feet / target / speed / loft / hand / ball
+	read: '' | 'match' | 'miss'; // did your read match? (V / X)
+	emotion: '' | 'good' | 'ok' | 'bad';
+	note: string;
+}
+
 /**
- * The shared, persisted record produced by BOTH modes (bowl-off + lane read).
+ * The shared, persisted record produced by BOTH modes (bowl-off + journal).
  * History/analytics read this; mode-specific fields are optional.
  */
 export interface GameRecord {
@@ -85,16 +96,18 @@ export interface GameRecord {
 	date: string; // ISO timestamp
 	mode: 'bowloff' | 'journal';
 	alley: string;
-	condition: LaneCondition;
-	frames: Frame[];
-	score: number;
-	handicap: number;
-	leaves: Leave[];
-	spares: { attempts: number; converted: number; splits: number };
 	// bowl-off only
+	condition?: LaneCondition;
+	frames?: Frame[];
+	score?: number;
+	handicap?: number;
+	leaves?: Leave[];
+	spares?: { attempts: number; converted: number; splits: number };
 	opponents?: { name: string; score: number }[];
 	result?: 'win' | 'loss' | 'tie';
 	usedHandicap?: boolean;
-	// journal only (future)
-	shots?: unknown[];
+	// journal only
+	pattern?: string;
+	ball?: string;
+	shots?: JournalShot[];
 }

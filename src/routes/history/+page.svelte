@@ -4,8 +4,12 @@
 	history.load();
 	let games = $derived(history.games);
 	let bowloffs = $derived(games.filter((g) => g.mode === 'bowloff'));
-	let avg = $derived(bowloffs.length ? Math.round(bowloffs.reduce((s, g) => s + g.score, 0) / bowloffs.length) : 0);
-	let best = $derived(bowloffs.length ? Math.max(...bowloffs.map((g) => g.score)) : 0);
+	let avg = $derived(bowloffs.length ? Math.round(bowloffs.reduce((s, g) => s + (g.score ?? 0), 0) / bowloffs.length) : 0);
+	let best = $derived(bowloffs.length ? Math.max(...bowloffs.map((g) => g.score ?? 0)) : 0);
+	const readRate = (g: { shots?: { read: string }[] }) => {
+		const j = (g.shots ?? []).filter((s) => s.read);
+		return { matched: j.filter((s) => s.read === 'match').length, judged: j.length };
+	};
 
 	const fmt = (iso: string) => {
 		const d = new Date(iso);
@@ -22,7 +26,7 @@
 
 	{#if !games.length}
 		<p class="lede">Every game you record lands here.</p>
-		<div class="soon">No games yet — finish a bowl-off and it’ll show up automatically.</div>
+		<div class="soon">No games yet — finish a bowl-off or a journal session and it’ll show up automatically.</div>
 	{:else}
 		<div class="summary">
 			<div class="stat"><div class="v">{bowloffs.length}</div><div class="k">games</div></div>
@@ -37,16 +41,26 @@
 					<span class="date">{fmt(g.date)}</span>
 					<button class="del" aria-label="Delete game" onclick={() => history.remove(g.id)}>✕</button>
 				</div>
-				<div class="mid">
-					<span class="score">{g.score}{g.usedHandicap && g.handicap ? ` (+${g.handicap})` : ''}</span>
-					{#if g.result}<span class="res" style="color:{resultColor(g.result)}">{g.result.toUpperCase()}</span>{/if}
-				</div>
-				<div class="meta">
-					{g.alley} · {g.condition.length}/{g.condition.volume}{g.condition.patternType === 'sport' ? ' · sport' : ''}
-					{#if g.spares.attempts}· spares {g.spares.converted}/{g.spares.attempts}{g.spares.splits ? ` · ${g.spares.splits} split${g.spares.splits > 1 ? 's' : ''}` : ''}{/if}
-				</div>
-				{#if g.opponents?.length}
-					<div class="vs">vs {g.opponents.map((o) => `${o.name.split(' ')[0]} ${o.score}`).join(' · ')}</div>
+				{#if g.mode === 'bowloff'}
+					<div class="mid">
+						<span class="score">{g.score}{g.usedHandicap && g.handicap ? ` (+${g.handicap})` : ''}</span>
+						{#if g.result}<span class="res" style="color:{resultColor(g.result)}">{g.result.toUpperCase()}</span>{/if}
+					</div>
+					<div class="meta">
+						{g.alley}{g.condition ? ` · ${g.condition.length}/${g.condition.volume}${g.condition.patternType === 'sport' ? ' · sport' : ''}` : ''}
+						{#if g.spares?.attempts}· spares {g.spares.converted}/{g.spares.attempts}{g.spares.splits ? ` · ${g.spares.splits} split${g.spares.splits > 1 ? 's' : ''}` : ''}{/if}
+					</div>
+					{#if g.opponents?.length}
+						<div class="vs">vs {g.opponents.map((o) => `${o.name.split(' ')[0]} ${o.score}`).join(' · ')}</div>
+					{/if}
+				{:else}
+					{@const rr = readRate(g)}
+					<div class="mid">
+						<span class="score">{g.shots?.length ?? 0}</span>
+						<span class="res" style="color:var(--dim);font-weight:600">shot{(g.shots?.length ?? 0) === 1 ? '' : 's'}</span>
+						{#if rr.judged}<span class="res" style="color:{rr.matched === rr.judged ? 'var(--me)' : 'var(--gold)'}">read {rr.matched}/{rr.judged}</span>{/if}
+					</div>
+					<div class="meta">{g.alley}{g.pattern ? ` · ${g.pattern}` : ''}{g.ball ? ` · ${g.ball}` : ''}</div>
 				{/if}
 			</div>
 		{/each}
