@@ -33,6 +33,20 @@ export class History {
 		this.games = [];
 		this.#persist();
 	}
+	/** Merge (or replace) imported games. Returns how many new ones were added. */
+	import(incoming: GameRecord[], replace = false): number {
+		this.load();
+		if (replace) {
+			this.games = incoming;
+			this.#persist();
+			return incoming.length;
+		}
+		const have = new Set(this.games.map((g) => g.id));
+		const fresh = incoming.filter((g) => g && g.id && !have.has(g.id));
+		this.games = [...fresh, ...this.games].sort((a, b) => (a.date < b.date ? 1 : -1));
+		this.#persist();
+		return fresh.length;
+	}
 
 	/** Generate an id without relying on crypto (works everywhere). */
 	static newId() {

@@ -94,7 +94,8 @@ class BowlOff {
 			/* ignore corrupt setup */
 		}
 	}
-	#saveSetup() {
+	/** Persist the current setup (also called from Settings when the profile changes). */
+	saveSetup() {
 		if (typeof localStorage === 'undefined') return;
 		localStorage.setItem(SETUP_KEY, JSON.stringify({ cond: this.cond, human: this.human, selectedIds: this.selectedIds, cfg: this.cfg }));
 	}
@@ -122,7 +123,7 @@ class BowlOff {
 		const c = this.cond;
 		const initF = initialFriction(c);
 		this.selectedIds = this.selectedIds.filter((id) => this.roster.some((r) => r.id === id));
-		this.#saveSetup(); // remember last-used setup
+		this.saveSetup(); // remember last-used setup
 		const opps: Opp[] = this.selectedIds.map((id) => {
 			const b = this.roster.find((r) => r.id === id) as Bowler;
 			const ball = recommendBall(clamp((b.attr.rev - 150) / 400, 0, 1), initF + 0.07);
