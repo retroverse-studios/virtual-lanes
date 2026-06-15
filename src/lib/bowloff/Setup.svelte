@@ -18,7 +18,7 @@
 	let laneSummary = $derived(`${g.cond.alley} · ${g.cond.length}/${g.cond.volume}${g.cond.patternType === 'sport' ? ' · sport' : ''}`);
 	let gameSummary = $derived(`${STYLE_PRESETS[g.human.styleKey].label} · ${g.human.avg} avg${g.human.handicap ? ` · hcp ${g.human.handicap}` : ''}`);
 	let rivalSummary = $derived(
-		g.selectedIds.length ? g.selectedIds.map((id) => g.roster.find((r) => r.id === id)?.name.split(' ')[0]).join(', ') : 'pick at least one rival'
+		g.selectedIds.length ? g.selectedIds.map((id) => g.roster.find((r) => r.id === id)?.name.split(' ')[0]).join(', ') : 'Solo — just track your game'
 	);
 	let advSummary = $derived(`${HCP[g.cfg.hcpMode]} · breakdown ${g.cfg.breakdown ? 'on' : 'off'} · ${g.cfg.laneMode === 'bySelection' ? 'this match' : g.cfg.laneMode}`);
 </script>
@@ -150,7 +150,7 @@
 		</div>
 	</details>
 
-	<button class="cta" style="margin-top:6px" disabled={g.selectedIds.length === 0} onclick={() => g.startGame()}>
-		{g.selectedIds.length ? `Start vs ${g.selectedIds.length} rival${g.selectedIds.length > 1 ? 's' : ''} →` : 'Pick at least one rival'}
+	<button class="cta" style="margin-top:6px" onclick={() => g.startGame()}>
+		{g.selectedIds.length ? `Start vs ${g.selectedIds.length} rival${g.selectedIds.length > 1 ? 's' : ''} →` : 'Start solo game →'}
 	</button>
 </div>

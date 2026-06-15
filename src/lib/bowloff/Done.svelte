@@ -5,6 +5,7 @@
 
 	let rows = $derived(g.standings());
 	let win = $derived(rows[0]);
+	let solo = $derived(g.opponents.length === 0);
 	let lv = $derived(g.leaves);
 	let att = $derived(lv.length);
 	let conv = $derived(lv.filter((x) => x.converted).length);
@@ -13,8 +14,8 @@
 
 <div class="page" style="padding-top:20px">
 	<div style="text-align:center;margin-bottom:14px">
-		<div style="font-size:24px;font-weight:800">{win.me ? 'You win! 🏆' : `${win.name.split(' ')[0]} wins`}</div>
-		<div style="color:var(--dim);font-size:13px">{g.useHcp ? 'with handicap' : 'scratch'} · final</div>
+		<div style="font-size:24px;font-weight:800">{solo ? `Final · ${win.scratch}` : win.me ? 'You win! 🏆' : `${win.name.split(' ')[0]} wins`}</div>
+		<div style="color:var(--dim);font-size:13px">{solo ? 'solo game' : g.useHcp ? 'with handicap' : 'scratch'}</div>
 	</div>
 
 	<Leaderboard />

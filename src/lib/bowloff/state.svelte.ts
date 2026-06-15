@@ -224,8 +224,15 @@ class BowlOff {
 	#saveGame() {
 		const rows = this.standings();
 		const me = rows.find((r) => r.me)!;
-		const bestOpp = Math.max(0, ...rows.filter((r) => !r.me).map((r) => r.total));
-		const result = me.total > bestOpp ? 'win' : me.total < bestOpp ? 'loss' : 'tie';
+		const oppRows = rows.filter((r) => !r.me);
+		const bestOpp = oppRows.length ? Math.max(...oppRows.map((r) => r.total)) : 0;
+		const result: 'win' | 'loss' | 'tie' | undefined = oppRows.length
+			? me.total > bestOpp
+				? 'win'
+				: me.total < bestOpp
+					? 'loss'
+					: 'tie'
+			: undefined;
 		const rec: GameRecord = {
 			id: History.newId(),
 			date: new Date().toISOString(),
@@ -241,7 +248,7 @@ class BowlOff {
 				converted: this.leaves.filter((l) => l.converted).length,
 				splits: this.leaves.filter((l) => l.split).length
 			},
-			opponents: this.opponents.map((o) => ({ name: o.bowler.name, score: lastTotal(this.oppFrames(o)) })),
+			opponents: this.opponents.length ? this.opponents.map((o) => ({ name: o.bowler.name, score: lastTotal(this.oppFrames(o)) })) : undefined,
 			result,
 			usedHandicap: this.useHcp
 		};

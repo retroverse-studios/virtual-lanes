@@ -4,6 +4,7 @@
 	import { glyphs, lastTotal, ALLPINS, PIN_ROWS } from '$lib/engine/bowling';
 
 	let meTot = $derived(lastTotal(g.humanFrames));
+	let solo = $derived(g.opponents.length === 0);
 	let leader = $derived([...g.opponents].sort((a, b) => lastTotal(g.oppFrames(b)) - lastTotal(g.oppFrames(a)))[0]);
 	let leadTot = $derived(leader ? lastTotal(g.oppFrames(leader)) : 0);
 	let i = $derived(Math.min(g.curIdx, 9));
@@ -22,16 +23,22 @@
 </script>
 
 <div class="play">
-	<div class="hero">
-		<div class="side me"><div class="lbl">YOU</div><div class="big">{meTot}</div></div>
-		<div class="vs">VS</div>
-		<div class="side opp"><div class="lbl">{leader ? leader.bowler.name.split(' ')[0] : '—'} (lead)</div><div class="big">{leadTot}</div></div>
-	</div>
-
-	<div class="cards">
-		<div class="fcard"><div class="cap">Your frame {i + 1}</div><div class="rollbig">{myG}</div><div class="pend">bowling…</div></div>
-		<div class="fcard"><div class="cap">{leader ? leader.bowler.name.split(' ')[0] : ''} fr {Math.max(1, g.revealed)}</div><div class="rollbig">{oppLast}</div><div class="pend">{g.revealed > 0 ? 'revealed' : 'waiting'}</div></div>
-	</div>
+	{#if solo}
+		<div class="hero solo"><div class="side me"><div class="lbl">YOU · {g.cond.alley}</div><div class="big">{meTot}</div></div></div>
+		<div class="cards" style="grid-template-columns:1fr">
+			<div class="fcard"><div class="cap">Your frame {i + 1}</div><div class="rollbig">{myG}</div><div class="pend">bowling…</div></div>
+		</div>
+	{:else}
+		<div class="hero">
+			<div class="side me"><div class="lbl">YOU</div><div class="big">{meTot}</div></div>
+			<div class="vs">VS</div>
+			<div class="side opp"><div class="lbl">{leader ? leader.bowler.name.split(' ')[0] : '—'} (lead)</div><div class="big">{leadTot}</div></div>
+		</div>
+		<div class="cards">
+			<div class="fcard"><div class="cap">Your frame {i + 1}</div><div class="rollbig">{myG}</div><div class="pend">bowling…</div></div>
+			<div class="fcard"><div class="cap">{leader ? leader.bowler.name.split(' ')[0] : ''} fr {Math.max(1, g.revealed)}</div><div class="rollbig">{oppLast}</div><div class="pend">{g.revealed > 0 ? 'revealed' : 'waiting'}</div></div>
+		</div>
+	{/if}
 
 	<div class="leavestat">{leaveLine}</div>
 
@@ -91,6 +98,9 @@
 	.hero .vs {
 		color: var(--dim);
 		font-weight: 800;
+	}
+	.hero.solo {
+		grid-template-columns: 1fr;
 	}
 	.cards {
 		display: grid;
