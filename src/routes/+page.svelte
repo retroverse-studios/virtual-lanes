@@ -20,5 +20,10 @@
 		<div class="d">Film a shot — auto-track the ball to show laydown, breakpoint, pocket and a top-down path.</div>
 	</a>
 
+	<a class="tile form" href="/form">
+		<div class="t">Form <span class="badge">soon</span></div>
+		<div class="d">Film your approach — track your body to read swing plane, posture and footwork, step by step.</div>
+	</a>
+
 	<p class="minor">One game, one history. Switch anytime from the tabs.</p>
 </div>

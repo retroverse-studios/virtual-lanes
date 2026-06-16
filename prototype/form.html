@@ -1,0 +1,231 @@
+<!doctype html>
+<!--
+  THROWAWAY PROTOTYPE — Form de-risking.
+  Sibling of trace.html: Trace tracks the BALL, Form tracks the BODY. Proves the risky
+  pose chain on a REAL bowling clip, all in-browser:
+    0) import a clip, step/scrub frames
+    1) run on-device pose estimation (MediaPipe Pose Landmarker) over every frame -> 33 joints/frame
+    2) draw the skeleton + the bowling-wrist path (the "swing-plane arc") over the frame
+    3) segment the approach into steps from foot-strike events (ankle hits its lowest point)
+    4) rough read-outs: spine tilt, swing-plane tilt, step count, tempo
+  Goal: answer "does pose tracking survive a real bowling approach on my phone clip —
+        especially the occlusion at release — and can I find the steps automatically?"
+  Run: python3 -m http.server 8000 -d prototype  ->  /form.html  (open the clip from your phone)
+  Needs network the FIRST time (pulls the pose model + wasm from a CDN); cached after.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>VirtualLanes — Form (prototype)</title>
+<style>
+  :root{--bg:#0b1020;--panel:#151b30;--line:#2b3556;--ink:#eef1fb;--dim:#9aa6cc;--accent:#6c8cff;--me:#46d39a;--gold:#ffce4d;--violet:#b282ff}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,system-ui,sans-serif;padding:12px;max-width:760px;margin:0 auto}
+  h1{font-size:18px}.dim{color:var(--dim)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+  button,label.file{background:var(--panel2,#1d2640);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 13px;font:inherit;cursor:pointer}
+  button.primary{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:700}
+  button:disabled{opacity:.4}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+  .stage h2{font-size:14px;margin:0 0 8px}
+  canvas{max-width:100%;background:#000;border-radius:8px;display:block;touch-action:none}
+  .metric{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:4px 6px 0 0}
+  .metric b{color:var(--gold);font-size:18px}
+  input[type=range]{width:100%;accent-color:var(--violet)}
+  .pill{font-size:12px;color:var(--gold)}
+  .steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .steps button{padding:7px 10px;font-size:12px}
+  .steps button.on{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:700}
+  .toggle{display:flex;gap:14px;align-items:center;font-size:13px}
+  label.chk{display:flex;gap:5px;align-items:center;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>🏃 Form — pose de-risk prototype</h1>
+<p class="dim">Film an approach (down-the-lane or side-on, slow-mo ideal), then load the clip. Pose runs on-device — nothing is uploaded.</p>
+
+<div class="stage">
+  <h2>1 · Load a clip</h2>
+  <div class="row">
+    <label class="file">📁 Choose video<input type="file" accept="video/*" id="file" hidden></label>
+    <span id="vinfo" class="dim">no clip loaded</span>
+  </div>
+  <div class="row toggle">
+    <span class="dim">Bowling hand:</span>
+    <label class="chk"><input type="radio" name="hand" value="right" checked> Right</label>
+    <label class="chk"><input type="radio" name="hand" value="left"> Left</label>
+    <span class="dim">·</span>
+    <label class="chk"><input type="checkbox" id="showSkel" checked> Skeleton</label>
+    <label class="chk"><input type="checkbox" id="showArc" checked> Swing arc</label>
+  </div>
+  <input type="range" id="scrub" min="0" max="0" step="0.01" value="0" disabled>
+  <div class="row dim" id="frameinfo"></div>
+</div>
+
+<div class="stage">
+  <h2>2 · Frame + pose overlay</h2>
+  <canvas id="frame" width="640" height="360"></canvas>
+  <div class="row">
+    <button id="scan" class="primary" disabled>▶ Scan clip (run pose)</button>
+    <span id="scaninfo" class="dim">loading pose model…</span>
+  </div>
+</div>
+
+<div class="stage" id="resstage" style="display:none">
+  <h2>3 · Approach + read-outs</h2>
+  <div id="metrics"></div>
+  <p class="dim" style="margin:8px 0 2px">Detected positions — tap to jump (rough: foot-strikes from the lowest ankle point):</p>
+  <div class="steps" id="steps"></div>
+</div>
+
+<video id="vid" playsinline muted style="display:none"></video>
+
+<script type="module">
+import { PoseLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22";
+
+const $=id=>document.getElementById(id);
+const vid=$('vid'), fcanvas=$('frame'), fctx=fcanvas.getContext('2d',{willReadFrequently:true});
+
+// BlazePose 33-landmark skeleton (subset of the meaningful bones)
+const BONES=[[11,12],[11,23],[12,24],[23,24],   // torso
+  [11,13],[13,15],[12,14],[14,16],               // arms
+  [23,25],[25,27],[27,29],[27,31],[29,31],        // left leg + foot
+  [24,26],[26,28],[28,30],[28,32],[30,32]];       // right leg + foot
+const L={Lsh:11,Rsh:12,Lwr:15,Rwr:16,Lhip:23,Rhip:24,Lank:27,Rank:28};
+
+let frames=[];        // [{t, lm:[{x,y,z,v}...]}]  normalised landmarks per scanned frame
+let positions=[];     // [{label, t}]  detected approach positions
+let landmarker=null;
+
+/* ---------- load pose model ---------- */
+(async()=>{
+  try{
+    const vision=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm");
+    landmarker=await PoseLandmarker.createFromOptions(vision,{
+      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},
+      runningMode:"VIDEO", numPoses:1});
+    $('scaninfo').textContent='pose model ready';
+    if(vid.videoWidth) $('scan').disabled=false;
+  }catch(e){ $('scaninfo').textContent='⚠ could not load pose model (need network the first time): '+e.message; }
+})();
+
+/* ---------- load + scrub ---------- */
+$('file').onchange=e=>{const f=e.target.files[0]; if(!f)return; frames=[];positions=[];$('resstage').style.display='none';
+  vid.src=URL.createObjectURL(f);
+  vid.onloadedmetadata=()=>{ $('vinfo').textContent=`${vid.videoWidth}×${vid.videoHeight}, ${vid.duration.toFixed(1)}s`;
+    $('scrub').max=vid.duration; $('scrub').disabled=false; fitCanvas(); $('scan').disabled=!landmarker;
+    vid.currentTime=Math.min(0.1,vid.duration); };};
+$('scrub').oninput=e=>{ vid.currentTime=+e.target.value; };
+vid.onseeked=()=>{ drawFrame(); $('frameinfo').textContent=`t=${vid.currentTime.toFixed(2)}s`; };
+$('showSkel').onchange=$('showArc').onchange=()=>drawFrame();
+document.querySelectorAll('input[name=hand]').forEach(r=>r.onchange=()=>drawFrame());
+const hand=()=>document.querySelector('input[name=hand]:checked').value;
+
+function fitCanvas(){
+  const maxW=Math.min(640, window.innerWidth-26), s=maxW/vid.videoWidth;
+  fcanvas.width=vid.videoWidth; fcanvas.height=vid.videoHeight;
+  fcanvas.style.width=maxW+'px'; fcanvas.style.height=(vid.videoHeight*s)+'px';
+}
+function nearest(t){ if(!frames.length)return null; let b=frames[0];
+  for(const f of frames) if(Math.abs(f.t-t)<Math.abs(b.t-t)) b=f; return b; }
+
+function drawFrame(){
+  fctx.drawImage(vid,0,0,fcanvas.width,fcanvas.height);
+  const W=fcanvas.width,H=fcanvas.height;
+  if($('showArc').checked && frames.length){ // bowling-wrist path = the swing-plane arc
+    const wi=hand()==='right'?L.Rwr:L.Lwr;
+    fctx.strokeStyle='#ffce4d';fctx.lineWidth=Math.max(2,W/260);
+    fctx.beginPath(); let started=false;
+    for(const f of frames){ const p=f.lm[wi]; if(!p||p.v<0.3)continue;
+      const x=p.x*W,y=p.y*H; started?fctx.lineTo(x,y):fctx.moveTo(x,y); started=true; }
+    fctx.stroke();
+  }
+  if($('showSkel').checked){ const fr=nearest(vid.currentTime); if(fr) drawSkeleton(fr.lm,W,H); }
+}
+function drawSkeleton(lm,W,H){
+  fctx.lineWidth=Math.max(2,W/220); fctx.strokeStyle='#46d39a';
+  for(const [a,b] of BONES){ const p=lm[a],q=lm[b]; if(!p||!q||p.v<0.3||q.v<0.3)continue;
+    fctx.beginPath();fctx.moveTo(p.x*W,p.y*H);fctx.lineTo(q.x*W,q.y*H);fctx.stroke(); }
+  fctx.fillStyle='#b282ff';
+  for(const p of lm){ if(p.v<0.3)continue; fctx.beginPath();fctx.arc(p.x*W,p.y*H,Math.max(3,W/150),0,7);fctx.fill(); }
+}
+
+/* ---------- scan: run pose over the clip ---------- */
+$('scan').onclick=async()=>{
+  if(!landmarker||!vid.videoWidth)return;
+  frames=[];positions=[]; $('scan').disabled=true; $('scaninfo').textContent='scanning…';
+  vid.pause(); vid.currentTime=0; await new Promise(r=>{vid.onseeked=r;}); vid.onseeked=null;
+  const step=1/30;
+  for(let t=0;t<vid.duration;t+=step){
+    vid.currentTime=t; await new Promise(r=>{vid.onseeked=r;});
+    const res=landmarker.detectForVideo(vid, Math.round(t*1000));
+    if(res.landmarks && res.landmarks[0]){
+      // visibility lives on each landmark; fall back to 1 if a build omits it
+      frames.push({t, lm:res.landmarks[0].map(p=>({x:p.x,y:p.y,z:p.z,v:p.visibility??1}))});
+    }
+    $('scaninfo').textContent=`scanning… ${Math.round(t/vid.duration*100)}%`;
+  }
+  vid.onseeked=null;
+  $('scan').disabled=false; $('scaninfo').textContent=`scanned · pose on ${frames.length} frames`;
+  if(frames.length<4){ $('scaninfo').textContent+=' — too few; try a clearer/slower clip'; return; }
+  detectPositions(); showMetrics(); drawFrame();
+};
+
+/* ---------- segment the approach from foot-strikes ---------- */
+function detectPositions(){
+  // foot-strike ≈ local MAXIMUM of an ankle's image-y (foot at its lowest = planted)
+  const strikes=[];
+  for(const ai of [L.Lank,L.Rank]){
+    const ys=frames.map(f=>f.lm[ai]?.y ?? null);
+    const minGap=Math.max(3, Math.round(frames.length*0.04));
+    for(let i=minGap;i<frames.length-minGap;i++){
+      const y=ys[i]; if(y==null)continue; let isMax=true;
+      for(let k=i-minGap;k<=i+minGap;k++){ if(k===i)continue; if(ys[k]!=null && ys[k]>y){isMax=false;break;} }
+      if(isMax) strikes.push({t:frames[i].t});
+    }
+  }
+  strikes.sort((a,b)=>a.t-b.t);
+  // merge strikes from the two feet that are within a small window (same plant)
+  const merged=[]; const win=0.12;
+  for(const s of strikes){ if(merged.length && s.t-merged[merged.length-1].t<win)continue; merged.push(s); }
+  // label: stance(first frame), pushaway, then steps, last = release
+  positions=[{label:'stance',t:frames[0].t}];
+  if(merged.length){ positions.push({label:'pushaway',t:Math.max(frames[0].t,merged[0].t-0.15)}); }
+  merged.forEach((s,i)=>positions.push({label:'step'+(i+1),t:s.t}));
+  if(merged.length) positions[positions.length-1].label='release';
+  renderSteps();
+}
+function renderSteps(){
+  const box=$('steps'); box.innerHTML='';
+  positions.forEach(p=>{ const b=document.createElement('button'); b.textContent=`${p.label} ${p.t.toFixed(2)}s`;
+    b.onclick=()=>{ document.querySelectorAll('#steps button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); vid.currentTime=p.t; }; box.appendChild(b); });
+}
+
+/* ---------- rough read-outs ---------- */
+function ang(ax,ay,bx,by){ return Math.atan2(by-ay,bx-ax)*180/Math.PI; }
+function showMetrics(){
+  $('resstage').style.display='block';
+  // spine tilt: shoulder-mid -> hip-mid vs vertical, averaged over the approach
+  let tilt=0,n=0;
+  for(const f of frames){ const ls=f.lm[L.Lsh],rs=f.lm[L.Rsh],lh=f.lm[L.Lhip],rh=f.lm[L.Rhip];
+    if(!ls||!rs||!lh||!rh)continue; const sx=(ls.x+rs.x)/2,sy=(ls.y+rs.y)/2,hx=(lh.x+rh.x)/2,hy=(lh.y+rh.y)/2;
+    tilt+=Math.abs(90-Math.abs(ang(hx,hy,sx,sy)));n++; }
+  tilt=n?tilt/n:0;
+  // swing-plane tilt: line through the bowling-wrist path, angle vs vertical
+  const wi=hand()==='right'?L.Rwr:L.Lwr; const pts=frames.map(f=>f.lm[wi]).filter(p=>p&&p.v>0.3);
+  let plane=0;
+  if(pts.length>3){ const n2=pts.length; let mx=0,my=0; pts.forEach(p=>{mx+=p.x;my+=p.y;}); mx/=n2;my/=n2;
+    let sxx=0,sxy=0,syy=0; pts.forEach(p=>{const dx=p.x-mx,dy=p.y-my;sxx+=dx*dx;sxy+=dx*dy;syy+=dy*dy;});
+    const a=Math.atan2(2*sxy,sxx-syy)/2; plane=Math.abs(90-Math.abs(a*180/Math.PI)); }
+  const stepN=positions.filter(p=>p.label.startsWith('step')||p.label==='release').length;
+  const tempo=positions.length>1?(positions[positions.length-1].t-positions[0].t):0;
+  $('metrics').innerHTML=`
+    <span class="metric">steps <b>${stepN}</b></span>
+    <span class="metric">approach <b>${tempo.toFixed(2)}</b> s</span>
+    <span class="metric">spine tilt <b>${tilt.toFixed(0)}</b>°</span>
+    <span class="metric">swing-plane tilt <b>${plane.toFixed(0)}</b>°</span>
+    <div class="dim" style="margin-top:6px">Rough &amp; relative — angles are in the camera's 2-D plane, so they depend on camera position; occlusion at release (arm over body, ball over hand) drops joints. The value is comparing a clip to your OWN past clips from the same angle, not the absolute numbers.</div>`;
+}
+</script>
+</body>
+</html>

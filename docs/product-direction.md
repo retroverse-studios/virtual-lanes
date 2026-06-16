@@ -33,19 +33,22 @@ strike%, first-ball avg, spare/makable/split %, most-left pins, by pattern/volum
 
 ## Vision
 
-A **phone-first bowling companion** for real bowlers, with three modes:
+A **phone-first bowling companion** for real bowlers, with four modes:
 
 1. **Bowl-off (Compete)** — you bowl your *real* frames at the alley; a chosen rival is
    *simulated* and revealed frame-by-frame beside you. Live head-to-head. Makes practice fun
    and competitive. (Prototype: `prototype/bowl-off.html`.)
 2. **Journal (Study)** — record *real* shots: what you saw → decided → happened (V/X vs video),
    find misread patterns. (Functionality from the original **LaneRead** proof-of-concept.)
-3. **Trace (Measure)** — *coming soon.* Film a shot; auto-track the ball to show laydown,
+3. **Trace (Measure — the ball)** — *coming soon.* Film a shot; auto-track the ball to show laydown,
    breakpoint, entry angle, pocket and a top-down path, plus speed (and best-effort revs).
+4. **Form (Measure — the body)** — *coming soon.* Film your approach; on-device pose tracking reads
+   the swing-plane arc, spine tilt, hip turn, knee bend and footwork, split into positions
+   (stance → pushaway → steps → release). (Prototype: `prototype/form.html`.)
 
 You never simulate the human — you enter your real rolls/observations or film a real shot.
-Naming: **Journal** = the *subjective* read (what you thought); **Trace** = the *objective*
-measurement (what actually happened) — the automated version of LaneRead's video-comparison step.
+Naming: **Journal** = the *subjective* read (what you thought); **Trace**/**Form** = the *objective*
+measurement (what actually happened) — Trace measures the ball, Form measures the body.
 
 **VirtualLanes is THE app going forward.** LaneRead (laneread.com) was an initial proof of
 concept; its journaling lives on as the Journal mode here. The standalone LaneRead app/site is to
@@ -99,6 +102,59 @@ interface TraceResult {
 }
 ```
 
+## Mode 4 — Form (camera body / pose tracking)
+
+The sibling of Trace: Trace measures the **ball**, Form measures the **body**. Same flow (import a
+clip, process in-browser, save to the shared history), same philosophy (**relative to your own
+baseline** beats absolute numbers; *consistency* is the signal).
+
+- **Pose detection is the easy 20%; interpretation is the 80%.** 2D single-person pose in good light
+  is mature and runs in-browser on a modern phone, especially on a *recorded* clip (no real-time
+  pressure). Engine: **MediaPipe Pose Landmarker** (Tasks Vision, WASM + WebGPU/WebGL) — 33 landmarks
+  incl. **feet** (needed for step detection) and a rough per-joint depth. (MoveNet/PoseNet are the
+  lighter 17-keypoint alternatives; ml5.js wraps them but isn't for shipping.)
+- **Killer feature = split the approach into positions.** Stance · pushaway · step 1–4 · release,
+  auto-segmented from **foot-strike events** (ankle vertical velocity → plant), captured as still
+  frames the user flicks between — like a golf-swing analyser (V1/Hudl Technique), which nobody does
+  well for bowling.
+- **Show the derived insight, not the noisy skeleton.** Toggleable skeleton overlay for "see my
+  body"; clean abstracted overlays (swing-plane arc, spine line, step markers, angle read-outs) for
+  "read my form."
+- **Multi-angle earns its place** (it's not a nice-to-have): down-the-line reads swing plane + drift;
+  side-on reads spine tilt + posture + knee bend. Different camera = different metric. Tag each clip
+  with its angle; only compare like-with-like.
+- **Honest limits:** 2D keypoints live in image space, so "hip open" / "spine rotation" (3D) are
+  approximate from one view; **self-occlusion** at release (arm crosses torso, ball hides hand, legs
+  cross) drops joints exactly when it's most interesting; raw keypoints jitter → smooth (One-Euro)
+  before deriving angles. Mark estimates honestly, same as Trace's revs.
+- **Stays in the one PWA**; on-device only (a body clip never leaves the phone — privacy matters more
+  here than for a ball track).
+
+### Build strategy (de-risked, staged — prototype in `prototype/form.html`)
+1. **Plumbing** — import a clip, step/scrub frames (shared with Trace).
+2. **Pose per frame** — run MediaPipe Pose over the clip, store 33 landmarks/frame; draw the skeleton.
+3. **Derive timelines** — swing-arm angle (bowling-arm wrist↔shoulder), spine tilt (shoulder-mid↔
+   hip-mid vs vertical), wrist path = the **swing-plane arc** drawn over the frame.
+4. **Segment the approach** — detect foot-strikes (local maxima of the lower ankle's image-y) →
+   stance/pushaway/steps/release positions; the genuinely uncertain bit the prototype must validate.
+5. **Later** — relative-to-baseline comparison, multi-angle clips, smoothing/filtering, ML on
+   accumulated clips, Capacitor camera for live mode.
+
+### Data shapes (sketch)
+```ts
+interface PoseFrame { t: number; landmarks: { x: number; y: number; z: number; v: number }[]; } // 33 BlazePose pts, normalised
+type ApproachPhase = 'stance' | 'pushaway' | 'step1' | 'step2' | 'step3' | 'step4' | 'release';
+interface FormPosition { phase: ApproachPhase; t: number; frame: number; } // a captured still in the approach
+interface FormResult {
+  id: string; date: string; clipName?: string;
+  angle: 'down-the-line' | 'side'; handedness: 'left' | 'right';
+  frames: PoseFrame[];
+  positions: FormPosition[];
+  metrics: { swingPlaneDeg?: number; spineTiltDeg?: number; hipTurnDeg?: number; kneeBendDeg?: number; tempoMs?: number; };
+  note?: string; gameId?: string; frameNo?: number; // optional link to a game/frame (shared model)
+}
+```
+
 ## Platform & architecture
 
 - **One PWA, two modes** — not two apps. PWA storage is partitioned per origin, so one origin =
@@ -111,7 +167,7 @@ interface TraceResult {
 - **Backend/accounts deferred** to the future cloud-analytics / AI phase (what LaneRead's roadmap
   already teases). Only then does splitting into truly separate apps become viable.
 - **Recommended stack:** SvelteKit + TypeScript (least boilerplate, great PWA story); Vite+React
-  is the fallback if more examples/AI-help matter. Tabbed shell: `[Bowl-off] [Journal] [Trace] [History] [Settings]`.
+  is the fallback if more examples/AI-help matter. Tabbed shell: `[Bowl-off] [Journal] [Trace] [Form] [History] [Settings]`.
 
 ## Unified data model
 

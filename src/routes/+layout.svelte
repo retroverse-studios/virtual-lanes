@@ -9,6 +9,7 @@
 		{ href: '/bowloff', ic: '🎳', label: 'Bowl-off' },
 		{ href: '/journal', ic: '📖', label: 'Journal' },
 		{ href: '/trace', ic: '🎥', label: 'Trace' },
+		{ href: '/form', ic: '🏃', label: 'Form' },
 		{ href: '/history', ic: '📊', label: 'History' },
 		{ href: '/settings', ic: '⚙️', label: 'Settings' }
 	];

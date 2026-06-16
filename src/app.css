@@ -9,6 +9,7 @@
 	--opp: #ff7a59;
 	--accent: #6c8cff;
 	--gold: #ffce4d;
+	--violet: #b282ff;
 }
 * {
 	box-sizing: border-box;
@@ -119,6 +120,9 @@ button {
 }
 .tile.trace {
 	border-color: rgba(255, 206, 77, 0.45);
+}
+.tile.form {
+	border-color: rgba(178, 130, 255, 0.45);
 }
 .tile .badge {
 	font-size: 10px;

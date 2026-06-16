@@ -36,7 +36,8 @@
 	<div class="card">
 		🎳 <b>Bowl-off</b> — bowl real frames vs a simulated rival (or solo for stats).<br />
 		📖 <b>Journal</b> — record what you saw / decided / happened.<br />
-		🎥 <b>Trace</b> — <i>coming soon</i>: film a shot and auto-track the ball.
+		🎥 <b>Trace</b> — <i>coming soon</i>: film a shot and auto-track the ball.<br />
+		🏃 <b>Form</b> — <i>coming soon</i>: film your approach and track your body — swing plane, posture, footwork.
 	</div>
 
 	<p class="hint">Thanks for testing 🙏</p>
