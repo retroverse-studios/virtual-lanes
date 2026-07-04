@@ -1,7 +1,10 @@
 name: Deploy landing page to GitHub Pages
 
 # The app itself deploys to Cloudflare Pages (virtual-lanes.pages.dev);
-# this publishes just the static landing/ folder to GitHub Pages.
+# this publishes the static landing/ folder to GitHub Pages, with the
+# MkDocs build from the gh-pages branch kept available under /docs/.
+# NB: pushing new docs to gh-pages does NOT retrigger this workflow —
+# run it manually (workflow_dispatch) to refresh /docs/.
 on:
   push:
     branches: [main]
@@ -28,11 +31,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: _gh-pages
+
+      - name: Assemble site (landing at root, docs under /docs/)
+        run: |
+          mkdir -p site/docs
+          cp -r landing/* site/
+          rsync -a --exclude '.git' _gh-pages/ site/docs/
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: landing
+          path: site
 
       - id: deployment
         uses: actions/deploy-pages@v4
