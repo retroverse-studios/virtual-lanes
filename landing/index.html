@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VirtualLanes — the bowling companion in your pocket</title>
+  <meta name="description" content="A phone-first bowling companion PWA. Bowl your real frames against simulated rivals, journal every shot, and track your stats — all local, all offline, no accounts.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="wordmark" href="#top">🎳 VirtualLanes</a>
+      <div class="nav-links">
+        <a href="#modes">Modes</a>
+        <a href="#features">Features</a>
+        <a href="#get">Get it</a>
+        <a href="https://github.com/michael-borck/virtual-lanes">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Compete · Journal · Trace · Form</p>
+        <h1>Bowl your real game. <em>Beat a simulated rival.</em></h1>
+        <p class="sub">
+          VirtualLanes is a phone-first bowling companion. Tap in the frames you
+          actually bowl and race a simulated opponent who reacts to the same
+          lanes as you — then journal what you saw, decided and adjusted, so
+          your lane read gets sharper every session. One game, one history.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://virtual-lanes.pages.dev">🎳 Open the app</a>
+          <a class="btn btn-ghost" href="https://github.com/michael-borck/virtual-lanes">View on GitHub</a>
+        </div>
+
+        <p class="privacy-tag">Local-first PWA. Your games stay on your phone — no accounts, no cloud, works offline.</p>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="lane-scene">
+          <div class="lane">
+            <div class="gutter gutter-l"></div>
+            <div class="gutter gutter-r"></div>
+            <div class="boards">
+              <div class="oil"></div>
+              <div class="pindeck">
+                <span class="pin p1"></span><span class="pin p2"></span><span class="pin p3"></span><span class="pin p4"></span>
+                <span class="pin p5"></span><span class="pin p6"></span><span class="pin p7"></span>
+                <span class="pin p8"></span><span class="pin p9"></span><span class="pin p10"></span>
+              </div>
+              <div class="lane-arrows">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="ball-track"><div class="ball-hook"><div class="ball"></div></div></div>
+              <div class="strike-flash">STRIKE!</div>
+            </div>
+          </div>
+
+          <div class="scorecard">
+            <div class="score-row me">
+              <span class="who">You</span>
+              <span class="frames">
+                <span class="fr">X</span><span class="fr">9 /</span><span class="fr">X</span><span class="fr">8 1</span><span class="fr live" id="live-frame">X</span>
+              </span>
+              <b class="tot" id="tot-me">107</b>
+            </div>
+            <div class="score-row opp">
+              <span class="who">The Iceman</span>
+              <span class="frames">
+                <span class="fr">9 /</span><span class="fr">X</span><span class="fr">8 /</span><span class="fr">X</span><span class="fr">9 -</span>
+              </span>
+              <b class="tot" id="tot-opp">98</b>
+            </div>
+            <div class="lane-note">Frame 5 · house shot, oil starting to break down</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="modes" id="modes">
+    <div class="container">
+      <h2>Four modes, one history</h2>
+      <div class="mode-grid">
+        <div class="card mode compete">
+          <h3>🎳 Bowl-off</h3>
+          <p>Bowl your real frames and compete against a chosen rival, frame by frame. Tap the pins you knock down; the rival bowls the same breaking-down lanes.</p>
+        </div>
+        <div class="card mode study">
+          <h3>📖 Journal</h3>
+          <p>Record your real shots — what you saw, what you decided, what happened. Annotate any frame of a live game to sharpen your lane read.</p>
+        </div>
+        <div class="card mode trace">
+          <h3>🎥 Trace <span class="soon">soon</span></h3>
+          <p>Film a shot and auto-track the ball — laydown, breakpoint, pocket entry and speed, with a top-down path of every throw.</p>
+        </div>
+        <div class="card mode form">
+          <h3>🏃 Form <span class="soon">soon</span></h3>
+          <p>Film your approach — on-device pose tracking reads your swing plane, posture and footwork, step by step. Nothing leaves your phone.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Built for league night</h2>
+      <div class="feature-grid">
+        <div class="card">
+          <h3>🧠 A real simulation engine</h3>
+          <p>Rivals aren't random numbers — rev rate and ball speed drive results, oil breaks down as the game goes on, and ball changes matter.</p>
+        </div>
+        <div class="card">
+          <h3>🏆 Rivals with personality</h3>
+          <p>Build a roster of opponents, each with their own style and scout report. Pick your poison before every bowl-off — or go solo for stats.</p>
+        </div>
+        <div class="card">
+          <h3>🎳 Your arsenal</h3>
+          <p>Track your balls, switch mid-game with one tap, and see how each one performs across patterns and centres.</p>
+        </div>
+        <div class="card">
+          <h3>🏟️ Your centres</h3>
+          <p>Save the houses you bowl at and their patterns, so every game is logged against the conditions you actually faced.</p>
+        </div>
+        <div class="card">
+          <h3>📊 Stats that matter</h3>
+          <p>Average, strike %, spare and makable %, and breakdowns by pattern, ball and centre — across every mode, in one shared history.</p>
+        </div>
+        <div class="card">
+          <h3>🔒 Private by design</h3>
+          <p>No accounts, no uploads, no analytics. Everything lives on your device, and you can export a backup file anytime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="get" id="get">
+    <div class="container">
+      <h2>Get it on your phone</h2>
+      <div class="get-grid">
+        <div class="card get-card">
+          <h3>📱 Install the PWA</h3>
+          <p>Open the app in your phone's browser, then add it to your home screen — it opens full-screen and works offline after the first load.</p>
+          <a class="btn btn-primary btn-block" href="https://virtual-lanes.pages.dev">Open virtual-lanes.pages.dev</a>
+          <p class="fine-print"><b>iPhone (Safari):</b> Share → Add to Home Screen. <b>Android (Chrome):</b> menu (⋮) → Install app.</p>
+        </div>
+        <div class="card get-card">
+          <h3>🛠️ Host it yourself</h3>
+          <p>It's a static SvelteKit build — deploy it to any static host, or just run it locally.</p>
+          <pre><code>git clone https://github.com/michael-borck/virtual-lanes
+cd virtual-lanes
+pnpm install
+pnpm build   # static site in ./build</code></pre>
+          <p class="fine-print">No backend, no database — the build output is the whole app.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>MIT licensed · <a href="https://github.com/michael-borck/virtual-lanes">Source on GitHub</a></p>
+      <p class="fine-print">Scoring and simulation ported from the original <code>virtual_lanes</code> Python library.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

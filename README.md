@@ -29,6 +29,7 @@ pnpm check          # type-check
 
 - `src/lib/engine/` — the simulation + scoring engine (typed; ported from the original Python lib)
 - `src/routes/` — `+page` launch mode-picker, and `bowloff` / `journal` / `trace` / `form` / `history` / `settings` tabs
+- `landing/` — static landing page, deployed to GitHub Pages by `.github/workflows/pages.yml`
 - `prototype/` — throwaway HTML prototypes (bowl-off UX + engine, `trace.html` ball-track, `form.html` pose-track)
 - `reference/` — the original Python `virtual_lanes` library + tests, kept as the canonical scoring reference
 
