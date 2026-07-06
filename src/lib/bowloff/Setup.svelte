@@ -45,25 +45,25 @@
 			<a class="ghost" href="/centres" style="display:block;text-align:center;margin-bottom:10px">🏟 Manage centres</a>
 			<div class="field">
 				<span class="fl">Pattern length</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Pattern length">
 					{#each [['short', 'Short'], ['medium', 'Medium'], ['long', 'Long']] as [v, l] (v)}
-						<button class:on={g.cond.length === v} onclick={() => (g.cond.length = v as typeof g.cond.length)}>{l}</button>
+						<button class:on={g.cond.length === v} aria-pressed={g.cond.length === v} onclick={() => (g.cond.length = v as typeof g.cond.length)}>{l}</button>
 					{/each}
 				</div>
 			</div>
 			<div class="field">
 				<span class="fl">Oil volume</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Oil volume">
 					{#each [['light', 'Light'], ['medium', 'Medium'], ['heavy', 'Heavy']] as [v, l] (v)}
-						<button class:on={g.cond.volume === v} onclick={() => (g.cond.volume = v as typeof g.cond.volume)}>{l}</button>
+						<button class:on={g.cond.volume === v} aria-pressed={g.cond.volume === v} onclick={() => (g.cond.volume = v as typeof g.cond.volume)}>{l}</button>
 					{/each}
 				</div>
 			</div>
 			<div class="field">
 				<span class="fl">Pattern type</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Pattern type">
 					{#each [['house', 'House'], ['sport', 'Sport']] as [v, l] (v)}
-						<button class:on={g.cond.patternType === v} onclick={() => (g.cond.patternType = v as typeof g.cond.patternType)}>{l}</button>
+						<button class:on={g.cond.patternType === v} aria-pressed={g.cond.patternType === v} onclick={() => (g.cond.patternType === v as typeof g.cond.patternType)}>{l}</button>
 					{/each}
 				</div>
 			</div>
@@ -86,9 +86,9 @@
 				<div class="field"><label for="hhcp">Your handicap</label><input id="hhcp" type="number" inputmode="numeric" bind:value={g.human.handicap} /></div>
 				<div class="field">
 					<span class="fl">Division</span>
-					<div class="seg">
+					<div class="seg" role="group" aria-label="Division">
 						{#each [['open', 'Open'], ['pba', 'PBA'], ['pwba', 'PWBA']] as [v, l] (v)}
-							<button class:on={g.human.division === v} onclick={() => (g.human.division = v as typeof g.human.division)}>{l}</button>
+						<button class:on={g.human.division === v} aria-pressed={g.human.division === v} onclick={() => (g.human.division = v as typeof g.human.division)}>{l}</button>
 						{/each}
 					</div>
 				</div>
@@ -126,9 +126,9 @@
 		<div class="body">
 			<div class="field">
 				<span class="fl">Handicap system</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Handicap system">
 					{#each [['scratch', 'Scratch'], ['perBowler', 'Per bowler'], ['percent', '% of diff']] as [v, l] (v)}
-						<button class:on={g.cfg.hcpMode === v} onclick={() => (g.cfg.hcpMode = v as typeof g.cfg.hcpMode)}>{l}</button>
+						<button class:on={g.cfg.hcpMode === v} aria-pressed={g.cfg.hcpMode === v} onclick={() => (g.cfg.hcpMode = v as typeof g.cfg.hcpMode)}>{l}</button>
 					{/each}
 				</div>
 			</div>
@@ -142,17 +142,17 @@
 			{/if}
 			<div class="field">
 				<span class="fl">Lane oil breakdown</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Lane oil breakdown">
 					{#each [['on', 'On'], ['off', 'Off']] as [v, l] (v)}
-						<button class:on={(g.cfg.breakdown ? 'on' : 'off') === v} onclick={() => (g.cfg.breakdown = v === 'on')}>{l}</button>
+						<button class:on={(g.cfg.breakdown ? 'on' : 'off') === v} aria-pressed={(g.cfg.breakdown ? 'on' : 'off') === v} onclick={() => (g.cfg.breakdown = v === 'on')}>{l}</button>
 					{/each}
 				</div>
 			</div>
 			<div class="field">
 				<span class="fl">Whose traffic breaks it down?</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Whose traffic breaks it down">
 					{#each [['ignore', 'Ignore'], ['bySelection', 'This match'], ['manual', 'Set count']] as [v, l] (v)}
-						<button class:on={g.cfg.laneMode === v} onclick={() => (g.cfg.laneMode = v as typeof g.cfg.laneMode)}>{l}</button>
+						<button class:on={g.cfg.laneMode === v} aria-pressed={g.cfg.laneMode === v} onclick={() => (g.cfg.laneMode = v as typeof g.cfg.laneMode)}>{l}</button>
 					{/each}
 				</div>
 			</div>

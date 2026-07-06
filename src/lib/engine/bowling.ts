@@ -30,7 +30,12 @@ export function derive(attr: Attr, tierMult: number): SimParams {
 /** ball coverstock shifts friction comfort: urethane/plastic add control on the dry */
 export const BALL_BIAS: Record<Cover, number> = { solid: -0.02, hybrid: 0.03, pearl: 0, urethane: 0.12, plastic: 0.2 };
 
-export function eff(p: SimParams, friction: number, sport: boolean, ballBias = 0) {
+export interface Effective {
+	strike: number;
+	spare: number;
+	variance: number;
+}
+export function eff(p: SimParams, friction: number, sport: boolean, ballBias = 0): Effective {
 	const ideal = p.idealFriction + ballBias;
 	const sens = p.frictionSens * (sport ? 1.6 : 1);
 	const d = friction - ideal;
@@ -87,25 +92,37 @@ export function recommendBall(rev01: number, friction: number, forSpare = false)
 }
 
 /* ---------- opponent simulation (frame by frame; uses transition + ball change) ---------- */
-function simReg(p: ReturnType<typeof eff>): Frame {
-	if (rnd() < p.strike) return [10];
-	const split = rnd() < 0.1 * p.variance;
-	const first = split ? 6 + irange(3) : 5 + irange(5);
+// A ball rolled at a full rack of 10. Less consistent bowlers (high variance) occasionally
+// throw a wild shot — a gutter or light hit (0–5) — rather than the usual pocket-area leave.
+function fullBall(p: Effective): number {
+	if (rnd() < p.strike) return 10;
+	if (rnd() < clamp(p.variance * 0.14, 0.03, 0.2)) return irange(6); // wild: 0–5
+	return 6 + irange(4); // pocket-area leave: 6–9
+}
+function simReg(p: Effective): Frame {
+	const first = fullBall(p);
+	if (first === 10) return [10];
 	const rem = 10 - first;
-	const so = split ? p.spare * 0.25 : p.spare;
+	// a messy leave (split / washout) converts far less often; more likely with high variance.
+	const messy = rnd() < 0.12 * p.variance;
+	const so = messy ? p.spare * 0.25 : p.spare;
 	return [first, Math.min(rnd() < so ? rem : irange(rem + 1), rem)];
 }
-function simTen(p: ReturnType<typeof eff>): Frame {
+function simTen(p: Effective): Frame {
 	const r: number[] = [];
-	const ball = () => (rnd() < p.strike ? 10 : 5 + irange(5));
-	r.push(ball());
-	if (r[0] === 10) r.push(ball());
-	else {
-		const rem = 10 - r[0];
-		r.push(rnd() < p.spare ? rem : irange(rem + 1));
-	}
-	if (r[0] + r[1] >= 10) r.push(ball());
-	return r.map((x) => Math.min(x, 10));
+	const full = () => fullBall(p);
+	const at = (standing: number) => (rnd() < p.spare ? standing : irange(standing + 1));
+
+	r.push(full()); // ball 1
+	const earned = r[0] === 10; // a first-ball strike earns two bonus balls
+	// ball 2: fresh rack after a strike, otherwise the spare attempt at ball 1's remainder
+	r.push(earned ? full() : at(10 - r[0]));
+	// ball 3: only when earned. After a strike it resets (ball 2 also a strike) or continues
+	// ball 2's rack; after a (ball 1) spare it is a fresh bonus rack.
+	if (earned && r[1] === 10) r.push(full());
+	else if (earned) r.push(at(10 - r[1]));
+	else if (r[0] + r[1] === 10) r.push(full());
+	return r;
 }
 
 export interface SimResult {
@@ -191,9 +208,20 @@ export function glyphs(f: Frame | undefined, isTenth: boolean): string[] {
 	for (let i = 0; i < f.length; i++) {
 		const r = f[i];
 		if (isTenth) {
-			if (r === 10) g.push('X');
-			else if (i > 0 && f[i - 1] !== 10 && f[i - 1] + r === 10) g.push('/');
-			else g.push(r === 0 ? '-' : String(r));
+			if (i === 0) {
+				g.push(r === 10 ? 'X' : r === 0 ? '-' : String(r));
+			} else if (i === 1) {
+				// ball 2: spare if ball 1 wasn't a strike and they sum to 10; else a plain count
+				if (r === 10) g.push('X');
+				else if (f[0] !== 10 && f[0] + r === 10) g.push('/');
+				else g.push(r === 0 ? '-' : String(r));
+			} else {
+				// ball 3 (bonus): a spare only when ball 1 was a strike and ball 2 left an open count
+				// that ball 3 then converts — a fresh bonus ball (after strike+strike, or a spare) is never '/'
+				if (r === 10) g.push('X');
+				else if (f[0] === 10 && f[1] !== 10 && f[1] + r === 10) g.push('/');
+				else g.push(r === 0 ? '-' : String(r));
+			}
 		} else {
 			if (i === 0) g.push(r === 10 ? 'X' : r === 0 ? '-' : String(r));
 			else g.push(f[0] + r === 10 ? '/' : r === 0 ? '-' : String(r));

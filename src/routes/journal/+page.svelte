@@ -70,35 +70,35 @@
 			<div class="field"><label for="saw">What you saw</label><input id="saw" bind:value={j.draft.saw} placeholder="e.g. light hit, ball never recovered" /></div>
 			<div class="field">
 				<span class="fl">Reaction / hook timing</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Reaction / hook timing">
 					{#each REACTIONS as [v, l] (v)}
-						<button class:on={j.draft.reaction === v} onclick={() => (j.draft.reaction = j.draft.reaction === v ? '' : (v as typeof j.draft.reaction))}>{l}</button>
+						<button class:on={j.draft.reaction === v} aria-pressed={j.draft.reaction === v} onclick={() => (j.draft.reaction = j.draft.reaction === v ? '' : (v as typeof j.draft.reaction))}>{l}</button>
 					{/each}
 				</div>
 			</div>
 			<div class="field"><label for="res">What happened</label><input id="res" bind:value={j.draft.result} placeholder="e.g. strike, 10-pin, 3-6-10 split" /></div>
 			<div class="field">
 				<span class="fl">Adjusted</span>
-				<div class="chips">
+				<div class="chips" role="group" aria-label="Adjusted">
 					{#each ADJUSTMENTS as a (a)}
-						<button class="chip" class:on={j.draft.adjustments.includes(a)} onclick={() => j.toggleAdj(a)}>{a}</button>
+					<button class="chip" class:on={j.draft.adjustments.includes(a)} aria-pressed={j.draft.adjustments.includes(a)} onclick={() => j.toggleAdj(a)}>{a}</button>
 					{/each}
 				</div>
 			</div>
 			<div class="row2">
 				<div class="field">
 					<span class="fl">Your read</span>
-					<div class="seg">
+					<div class="seg" role="group" aria-label="Your read">
 						{#each READS as [v, l] (v)}
-							<button class:on={j.draft.read === v} onclick={() => (j.draft.read = j.draft.read === v ? '' : (v as typeof j.draft.read))}>{l}</button>
+							<button class:on={j.draft.read === v} aria-pressed={j.draft.read === v} onclick={() => (j.draft.read = j.draft.read === v ? '' : (v as typeof j.draft.read))}>{l}</button>
 						{/each}
 					</div>
 				</div>
 				<div class="field">
 					<span class="fl">Felt</span>
-					<div class="seg">
+					<div class="seg" role="group" aria-label="Felt">
 						{#each EMOTIONS as [v, e] (v)}
-							<button class:on={j.draft.emotion === v} onclick={() => (j.draft.emotion = j.draft.emotion === v ? '' : (v as typeof j.draft.emotion))}>{e}</button>
+							<button class:on={j.draft.emotion === v} aria-pressed={j.draft.emotion === v} onclick={() => (j.draft.emotion = j.draft.emotion === v ? '' : (v as typeof j.draft.emotion))}>{e}</button>
 						{/each}
 					</div>
 				</div>

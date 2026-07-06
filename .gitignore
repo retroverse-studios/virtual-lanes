@@ -1,3 +1,7 @@
+# macOS AppleDouble resource forks (written on ExFAT/network volumes) + DS_Store.
+._*
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

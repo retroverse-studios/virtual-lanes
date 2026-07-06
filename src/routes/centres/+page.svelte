@@ -46,16 +46,16 @@
 				<div class="field"><label for="clanes">Lanes</label><input id="clanes" type="number" inputmode="numeric" bind:value={d.lanes} /></div>
 			</div>
 			<div class="field"><span class="fl">Pinsetter</span>
-				<div class="seg">{#each [['freefall', 'Free-fall'], ['string', 'String']] as [v, l] (v)}<button class:on={d.pinsetter === v} onclick={() => (d.pinsetter = v as typeof d.pinsetter)}>{l}</button>{/each}</div>
+			<div class="seg" role="group" aria-label="Pinsetter">{#each [['freefall', 'Free-fall'], ['string', 'String']] as [v, l] (v)}<button class:on={d.pinsetter === v} aria-pressed={d.pinsetter === v} onclick={() => (d.pinsetter = v as typeof d.pinsetter)}>{l}</button>{/each}</div>
 			</div>
 			<div class="field"><span class="fl">Approach length</span>
-				<div class="seg">{#each [['short', 'Short'], ['standard', 'Standard'], ['long', 'Long']] as [v, l] (v)}<button class:on={d.approach === v} onclick={() => (d.approach = v as typeof d.approach)}>{l}</button>{/each}</div>
+			<div class="seg" role="group" aria-label="Approach length">{#each [['short', 'Short'], ['standard', 'Standard'], ['long', 'Long']] as [v, l] (v)}<button class:on={d.approach === v} aria-pressed={d.approach === v} onclick={() => (d.approach = v as typeof d.approach)}>{l}</button>{/each}</div>
 			</div>
 			<div class="field"><span class="fl">Approach feel</span>
-				<div class="seg">{#each [['sticky', 'Sticky'], ['normal', 'Normal'], ['slippery', 'Slippery']] as [v, l] (v)}<button class:on={d.approachFeel === v} onclick={() => (d.approachFeel = v as typeof d.approachFeel)}>{l}</button>{/each}</div>
+			<div class="seg" role="group" aria-label="Approach feel">{#each [['sticky', 'Sticky'], ['normal', 'Normal'], ['slippery', 'Slippery']] as [v, l] (v)}<button class:on={d.approachFeel === v} aria-pressed={d.approachFeel === v} onclick={() => (d.approachFeel = v as typeof d.approachFeel)}>{l}</button>{/each}</div>
 			</div>
 			<div class="field"><span class="fl">Ball return</span>
-				<div class="seg">{#each [['close', 'Close'], ['standard', 'Standard'], ['far', 'Far']] as [v, l] (v)}<button class:on={d.ballReturn === v} onclick={() => (d.ballReturn = v as typeof d.ballReturn)}>{l}</button>{/each}</div>
+			<div class="seg" role="group" aria-label="Ball return">{#each [['close', 'Close'], ['standard', 'Standard'], ['far', 'Far']] as [v, l] (v)}<button class:on={d.ballReturn === v} aria-pressed={d.ballReturn === v} onclick={() => (d.ballReturn = v as typeof d.ballReturn)}>{l}</button>{/each}</div>
 			</div>
 			<div class="field"><label for="cnote">Note</label><input id="cnote" bind:value={d.note} placeholder="optional" /></div>
 			<div class="frow">

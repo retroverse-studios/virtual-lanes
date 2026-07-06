@@ -13,17 +13,17 @@
 		<div class="sht">📝 Frame {g.noteFrame + 1} note</div>
 		<div class="field"><label for="pi-saw">What you saw</label><input id="pi-saw" bind:value={g.noteDraft.saw} placeholder="e.g. light hit, never recovered" /></div>
 		<div class="field"><span class="fl">Reaction</span>
-			<div class="seg">{#each REACTIONS as [v, l] (v)}<button class:on={g.noteDraft.reaction === v} onclick={() => (g.noteDraft.reaction = g.noteDraft.reaction === v ? '' : (v as typeof g.noteDraft.reaction))}>{l}</button>{/each}</div>
+			<div class="seg" role="group" aria-label="Reaction">{#each REACTIONS as [v, l] (v)}<button class:on={g.noteDraft.reaction === v} aria-pressed={g.noteDraft.reaction === v} onclick={() => (g.noteDraft.reaction = g.noteDraft.reaction === v ? '' : (v as typeof g.noteDraft.reaction))}>{l}</button>{/each}</div>
 		</div>
 		<div class="field"><span class="fl">Adjusted</span>
-			<div class="chips">{#each ADJUSTMENTS as a (a)}<button class="chip" class:on={g.noteDraft.adjustments.includes(a)} onclick={() => g.toggleNoteAdj(a)}>{a}</button>{/each}</div>
+			<div class="chips" role="group" aria-label="Adjusted">{#each ADJUSTMENTS as a (a)}<button class="chip" class:on={g.noteDraft.adjustments.includes(a)} aria-pressed={g.noteDraft.adjustments.includes(a)} onclick={() => g.toggleNoteAdj(a)}>{a}</button>{/each}</div>
 		</div>
 		<div class="row2">
 			<div class="field"><span class="fl">Your read</span>
-				<div class="seg">{#each READS as [v, l] (v)}<button class:on={g.noteDraft.read === v} onclick={() => (g.noteDraft.read = g.noteDraft.read === v ? '' : (v as typeof g.noteDraft.read))}>{l}</button>{/each}</div>
+				<div class="seg" role="group" aria-label="Your read">{#each READS as [v, l] (v)}<button class:on={g.noteDraft.read === v} aria-pressed={g.noteDraft.read === v} onclick={() => (g.noteDraft.read = g.noteDraft.read === v ? '' : (v as typeof g.noteDraft.read))}>{l}</button>{/each}</div>
 			</div>
 			<div class="field"><span class="fl">Felt</span>
-				<div class="seg">{#each EMOTIONS as [v, e] (v)}<button class:on={g.noteDraft.emotion === v} onclick={() => (g.noteDraft.emotion = g.noteDraft.emotion === v ? '' : (v as typeof g.noteDraft.emotion))}>{e}</button>{/each}</div>
+				<div class="seg" role="group" aria-label="Felt">{#each EMOTIONS as [v, e] (v)}<button class:on={g.noteDraft.emotion === v} aria-pressed={g.noteDraft.emotion === v} onclick={() => (g.noteDraft.emotion = g.noteDraft.emotion === v ? '' : (v as typeof g.noteDraft.emotion))}>{e}</button>{/each}</div>
 			</div>
 		</div>
 		<div class="field"><label for="pi-note">Note</label><input id="pi-note" bind:value={g.noteDraft.note} placeholder="optional" /></div>

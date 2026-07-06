@@ -2,7 +2,6 @@
 	import { history } from '$lib/history.svelte';
 	import StatsView from '$lib/StatsView.svelte';
 
-	history.load();
 	let games = $derived(history.games);
 	let view = $state<'games' | 'stats'>('games');
 	const readRate = (g: { shots?: { read: string }[] }) => {
@@ -27,9 +26,9 @@
 		<p class="lede">Every game you record lands here.</p>
 		<div class="soon">No games yet — finish a bowl-off or a journal session and it’ll show up automatically.</div>
 	{:else}
-		<div class="seg" style="margin-bottom:12px">
-			<button class:on={view === 'games'} onclick={() => (view = 'games')}>Games</button>
-			<button class:on={view === 'stats'} onclick={() => (view = 'stats')}>Stats</button>
+		<div class="seg" role="group" aria-label="History view" style="margin-bottom:12px">
+			<button class:on={view === 'games'} aria-pressed={view === 'games'} onclick={() => (view = 'games')}>Games</button>
+			<button class:on={view === 'stats'} aria-pressed={view === 'stats'} onclick={() => (view = 'stats')}>Stats</button>
 		</div>
 
 		{#if view === 'stats'}

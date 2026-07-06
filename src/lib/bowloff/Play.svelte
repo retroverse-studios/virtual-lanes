@@ -59,12 +59,12 @@
 	</div>
 	<div class="striphint">tap a frame to note it{g.noteCount ? ` · ${g.noteCount} logged` : ''}</div>
 
-	<div class="deck">
+	<div class="deck" role="group" aria-label="Pin deck — tap each pin you knock down">
 		{#each PIN_ROWS as row, ri (ri)}
 			<div class="drow">
 				{#each row as p (p)}
 					{@const isS = standing.includes(p)}
-					<button class="pin" class:gone={!isS} class:hit={knocked.includes(p)} disabled={!isS} onclick={() => g.togglePin(p)}>{p}</button>
+					<button class="pin" class:gone={!isS} class:hit={knocked.includes(p)} disabled={!isS} aria-pressed={knocked.includes(p)} aria-label="Pin {p}{knocked.includes(p) ? ', marked' : ''}" onclick={() => g.togglePin(p)}>{p}</button>
 				{/each}
 			</div>
 		{/each}
@@ -253,7 +253,7 @@
 	.pin.hit {
 		background: var(--me);
 		border-color: var(--me);
-		color: #063;
+		color: #04230f; /* dark on --me green — was #063 (~3.8:1, failed AA at 11px) */
 	}
 	.deckbtns {
 		display: flex;
@@ -272,7 +272,7 @@
 	.bowl {
 		width: 100%;
 		background: var(--me);
-		color: #062;
+		color: #04230f; /* dark on --me green — was #062 (failed AA at 16px bold) */
 		font-weight: 800;
 		border-radius: 14px;
 		padding: 14px;

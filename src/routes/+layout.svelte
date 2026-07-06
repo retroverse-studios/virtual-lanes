@@ -3,8 +3,27 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { g } from '$lib/bowloff/state.svelte';
+	import { j } from '$lib/journal/state.svelte';
 
 	let { children } = $props();
+
+	// Apply app updates the moment a new service worker takes over — but never mid-session:
+	// a live bowl-off (in-memory until Finish) or an active journal would lose unsaved progress.
+	onMount(() => {
+		if (!('serviceWorker' in navigator)) return;
+		// Skip the very first activation (no prior controller) so a brand-new install doesn't
+		// reload the page it just loaded.
+		const hadController = !!navigator.serviceWorker.controller;
+		let refreshing = false;
+		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			if (refreshing || !hadController) return;
+			if (g.screen === 'play' || j.active) return; // defer until a safe moment
+			refreshing = true;
+			location.reload();
+		});
+	});
 
 	// The bottom bar = things you DO (the modes). Meta destinations live in "More".
 	const MODES = [

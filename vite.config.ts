@@ -10,8 +10,10 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			// Offline-first SPA: static files + a client-side routing fallback.
-			adapter: adapter({ fallback: 'index.html' })
+			// Offline-first SPA: prerender the static pages, fall back to a client-side shell for the
+			// rest. '200.html' is the Cloudflare Pages SPA convention (and avoids colliding with a
+			// prerendered home page at index.html); both CF Pages and Netlify serve it via _redirects.
+			adapter: adapter({ fallback: '200.html' })
 		})
 	]
 });

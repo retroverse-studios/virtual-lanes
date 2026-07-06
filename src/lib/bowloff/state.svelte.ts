@@ -193,15 +193,6 @@ class BowlOff {
 	get curFrame() {
 		return this.humanFrames[this.curIdx];
 	}
-	get legalMax() {
-		const i = this.curIdx,
-			f = this.humanFrames[i];
-		if (i < 9) return f.length === 0 ? 10 : 10 - f[0];
-		if (f.length === 0) return 10;
-		if (f.length === 1) return f[0] === 10 ? 10 : 10 - f[0];
-		if (f[0] === 10) return f[1] === 10 ? 10 : 10 - f[1];
-		return 10;
-	}
 	#frameDone(i: number) {
 		const f = this.humanFrames[i];
 		if (i < 9) return f[0] === 10 || f.length === 2;
@@ -346,11 +337,6 @@ class BowlOff {
 	}
 	oppFrames(o: Opp): Frame[] {
 		return o.game.slice(0, this.revealed);
-	}
-	oppPadded(o: Opp): Frame[] {
-		const out: Frame[] = [];
-		for (let i = 0; i < 10; i++) out.push(i < this.revealed ? o.game[i] : []);
-		return out;
 	}
 	get useHcp() {
 		return this.cfg.hcpMode !== 'scratch';

@@ -11,7 +11,6 @@
 		g.saveSetup();
 	}
 
-	history.load();
 	const styleOpts = Object.entries(STYLE_PRESETS).map(([k, v]) => ({ k, label: v.label }));
 	let importMsg = $state('');
 
@@ -66,9 +65,9 @@
 		<div class="field"><label for="hcp">Handicap</label><input id="hcp" type="number" inputmode="numeric" bind:value={g.human.handicap} oninput={() => g.saveSetup()} /></div>
 		<div class="field">
 			<span class="fl">Division</span>
-			<div class="seg">
+		<div class="seg" role="group" aria-label="Division">
 				{#each [['open', 'Open'], ['pba', 'PBA'], ['pwba', 'PWBA']] as [v, l] (v)}
-					<button class:on={g.human.division === v} onclick={() => { g.human.division = v as typeof g.human.division; g.saveSetup(); }}>{l}</button>
+				<button class:on={g.human.division === v} aria-pressed={g.human.division === v} onclick={() => { g.human.division = v as typeof g.human.division; g.saveSetup(); }}>{l}</button>
 				{/each}
 			</div>
 		</div>
@@ -76,17 +75,17 @@
 	<div class="row2">
 		<div class="field">
 			<span class="fl">Handedness</span>
-			<div class="seg">
+		<div class="seg" role="group" aria-label="Handedness">
 				{#each [['right', 'Right'], ['left', 'Left']] as [v, l] (v)}
-					<button class:on={g.human.handedness === v} onclick={() => { g.human.handedness = v as typeof g.human.handedness; g.saveSetup(); }}>{l}</button>
+				<button class:on={g.human.handedness === v} aria-pressed={g.human.handedness === v} onclick={() => { g.human.handedness = v as typeof g.human.handedness; g.saveSetup(); }}>{l}</button>
 				{/each}
 			</div>
 		</div>
 		<div class="field">
 			<span class="fl">Grip</span>
-			<div class="seg">
+		<div class="seg" role="group" aria-label="Grip">
 				{#each [['one', '1-handed'], ['two', '2-handed']] as [v, l] (v)}
-					<button class:on={g.human.grip === v} onclick={() => { g.human.grip = v as typeof g.human.grip; g.saveSetup(); }}>{l}</button>
+				<button class:on={g.human.grip === v} aria-pressed={g.human.grip === v} onclick={() => { g.human.grip = v as typeof g.human.grip; g.saveSetup(); }}>{l}</button>
 				{/each}
 			</div>
 		</div>
@@ -99,6 +98,9 @@
 
 	<div class="sec">Data</div>
 	<p class="lede" style="margin-bottom:10px">{history.games.length} game{history.games.length === 1 ? '' : 's'} saved on this device (local only — no account).</p>
+	{#if history.writeFailed}
+		<div class="msg warn">⚠ Storage full or unavailable — recent changes may not have saved. Use Export backup to keep your data.</div>
+	{/if}
 	<div class="btns">
 		<button class="cta sub" onclick={exportData} disabled={!history.games.length}>⤓ Export backup</button>
 		<label class="cta sub">
@@ -150,5 +152,8 @@
 		font-size: 13px;
 		color: var(--me);
 		margin-bottom: 12px;
+	}
+	.msg.warn {
+		color: var(--gold);
 	}
 </style>

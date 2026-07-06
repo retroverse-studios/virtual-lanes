@@ -1,27 +1,33 @@
 // Shared game history — one timeline for both modes, persisted to localStorage.
+import { browser } from '$app/environment';
+import { newId, readJSON, writeJSON } from '$lib/stores/local.svelte';
 import type { GameRecord } from '$lib/engine/types';
 
 const KEY = 'vl.games.v1';
 
 export class History {
 	games = $state<GameRecord[]>([]);
+	/** True when the most recent write failed (out of storage / private mode). */
+	writeFailed = $state(false);
 	#loaded = false;
 
-	/** Lazy-load from localStorage (client only). Safe to call repeatedly. */
-	load() {
-		if (this.#loaded || typeof localStorage === 'undefined') return;
-		this.#loaded = true;
-		try {
-			this.games = JSON.parse(localStorage.getItem(KEY) ?? '[]');
-		} catch {
-			this.games = [];
-		}
-	}
-	#persist() {
-		if (typeof localStorage !== 'undefined') localStorage.setItem(KEY, JSON.stringify(this.games));
-	}
-	add(g: GameRecord) {
+	constructor() {
 		this.load();
+	}
+
+	/** Load once from localStorage. Idempotent and SSR-safe — safe to call again. */
+	load() {
+		if (this.#loaded || !browser) return;
+		this.#loaded = true;
+		const parsed = readJSON<GameRecord[]>(KEY);
+		this.games = Array.isArray(parsed) ? parsed : [];
+	}
+
+	#persist() {
+		this.writeFailed = !writeJSON(KEY, this.games);
+	}
+
+	add(g: GameRecord) {
 		this.games.unshift(g); // newest first
 		this.#persist();
 	}
@@ -35,7 +41,6 @@ export class History {
 	}
 	/** Merge (or replace) imported games. Returns how many new ones were added. */
 	import(incoming: GameRecord[], replace = false): number {
-		this.load();
 		if (replace) {
 			this.games = incoming;
 			this.#persist();
@@ -48,9 +53,8 @@ export class History {
 		return fresh.length;
 	}
 
-	/** Generate an id without relying on crypto (works everywhere). */
 	static newId() {
-		return `${Date.now().toString(36)}-${Math.floor(Math.random() * 1e6).toString(36)}`;
+		return newId();
 	}
 }
 

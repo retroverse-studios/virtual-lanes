@@ -45,8 +45,8 @@
 			scout: d.scout.trim(),
 			custom: true
 		};
-		if (editingId) roster.updateCustom(editingId, b);
-		else roster.addCustom(b);
+		if (editingId) roster.update(editingId, b);
+		else roster.add(b);
 		formOpen = false;
 	}
 
@@ -70,25 +70,25 @@
 			<div class="field"><label for="rn">Name</label><input id="rn" bind:value={d.name} placeholder="e.g. The Belmo-style two-hander" /></div>
 			<div class="row2">
 				<div class="field"><span class="fl">Tier</span>
-					<div class="seg">
+					<div class="seg" role="group" aria-label="Tier">
 						{#each [['rookie', 'Rk'], ['club', 'Cl'], ['pro', 'Pro'], ['elite', 'El']] as [v, l] (v)}
-							<button class:on={d.tier === v} onclick={() => (d.tier = v as TierKey)}>{l}</button>
+						<button class:on={d.tier === v} aria-pressed={d.tier === v} onclick={() => (d.tier = v as TierKey)}>{l}</button>
 						{/each}
 					</div>
 				</div>
 				<div class="field"><label for="rh">Handicap</label><input id="rh" type="number" inputmode="numeric" bind:value={d.handicap} /></div>
 			</div>
 			<div class="field"><span class="fl">Division (label only)</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Division (label only)">
 					{#each [['open', 'Open'], ['pba', 'PBA'], ['pwba', 'PWBA']] as [v, l] (v)}
-						<button class:on={d.division === v} onclick={() => (d.division = v as typeof d.division)}>{l}</button>
+					<button class:on={d.division === v} aria-pressed={d.division === v} onclick={() => (d.division = v as typeof d.division)}>{l}</button>
 					{/each}
 				</div>
 			</div>
 			<div class="field"><span class="fl">Quick-fill from a style</span>
-				<div class="seg">
+				<div class="seg" role="group" aria-label="Quick-fill from a style">
 					{#each presetOpts as o (o.k)}
-						<button class:on={d.styleKey === o.k} onclick={() => applyPreset(o.k)}>{styleShort(o.k)}</button>
+					<button class:on={d.styleKey === o.k} aria-pressed={d.styleKey === o.k} onclick={() => applyPreset(o.k)}>{styleShort(o.k)}</button>
 					{/each}
 				</div>
 			</div>
@@ -119,7 +119,7 @@
 						<div class="st">{styleShort(b.styleKey)} · {TIERS[b.tier].label} · {b.division.toUpperCase()}{b.handicap ? ` · +${b.handicap}` : ''} · {b.attr.rev}rpm/{b.attr.speed}mph</div>
 					</div>
 					<button class="ghost sm" onclick={() => openEdit(b)}>Edit</button>
-					<button class="ghost sm danger" onclick={() => confirm(`Delete ${b.name}?`) && roster.removeCustom(b.id)}>✕</button>
+				<button class="ghost sm danger" onclick={() => confirm(`Delete ${b.name}?`) && roster.remove(b.id)}>✕</button>
 				</div>
 			{/each}
 		{/if}

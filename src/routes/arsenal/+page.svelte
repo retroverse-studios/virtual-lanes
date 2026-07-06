@@ -44,11 +44,11 @@
 			<p class="note">Name it whatever you like — mimic a real ball if you know its specs (we don't ship real brands). The simulation reads the <b>coverstock</b> (and surface); weight, core/CG and layout are recorded for your own tracking and future analysis.</p>
 			<div class="field"><label for="bn">Name</label><input id="bn" bind:value={d.name} placeholder="e.g. My benchmark solid" /></div>
 			<div class="field"><span class="fl">Coverstock</span>
-				<div class="seg">{#each COVERS as c (c)}<button class:on={d.cover === c} onclick={() => (d.cover = c)}>{c}</button>{/each}</div>
+			<div class="seg" role="group" aria-label="Coverstock">{#each COVERS as c (c)}<button class:on={d.cover === c} aria-pressed={d.cover === c} onclick={() => (d.cover = c)}>{c}</button>{/each}</div>
 			</div>
 			<div class="row2">
 				<div class="field"><span class="fl">Core</span>
-					<div class="seg">{#each CORES as c (c)}<button class:on={d.core === c} onclick={() => (d.core = c)}>{c === 'symmetric' ? 'Sym' : 'Asym'}</button>{/each}</div>
+				<div class="seg" role="group" aria-label="Core">{#each CORES as c (c)}<button class:on={d.core === c} aria-pressed={d.core === c} onclick={() => (d.core = c)}>{c === 'symmetric' ? 'Sym' : 'Asym'}</button>{/each}</div>
 				</div>
 				<div class="field"><label for="bw">Weight (lb)</label><input id="bw" type="number" inputmode="numeric" min="6" max="16" bind:value={d.weight} /></div>
 			</div>
