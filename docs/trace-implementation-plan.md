@@ -12,7 +12,7 @@
 - [x] Checkpoint in-progress bowl-off to localStorage + rehydrate on load — High
 - [x] Service worker: cache only status 200, skip Range requests (video cache poisoning) — Medium
       (also folded in: precache `prerendered` pages, offline-navigate fallback → `200.html`)
-- [ ] Refactor `GameRecord` into a discriminated union (`bowloff | journal | trace`-ready)
+- [x] Refactor `GameRecord` into a discriminated union (`bowloff | journal | trace`-ready)
       with exhaustive handling in `history`, `stats.ts`, history page
 
 ## Phase 1 — Plumbing: clip import + scrubbing
