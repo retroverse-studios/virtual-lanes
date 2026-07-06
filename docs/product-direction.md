@@ -6,13 +6,13 @@
 
 ## Build status (2026-06)
 
-The SvelteKit + adapter-static PWA is **live on Cloudflare Pages** (`virtual-lanes.pages.dev`,
-auto-deploys on push to `main`). **Done:** Bowl-off (layout B, positional pin deck, leave/spare/
+The SvelteKit + adapter-static PWA is **live on Cloudflare Pages** (`virtual-lanes.pages.dev`;
+git-connected to this repo 2026-07 — builds on push to `main`. Earlier deploys were manual uploads.) **Done:** Bowl-off (layout B, positional pin deck, leave/spare/
 split stats; **rivals optional → solo game tracking**), History (shared `GameRecord`, localStorage),
 **Journal v1**, **Rivals manager** (create/edit/delete custom + hide/unhide built-ins),
 **Settings** (profile + data export/import), **Stats** (History → Games/Stats: average/trend,
 strike%, first-ball avg, spare/makable/split %, most-left pins, by pattern/volume/length),
-**PWA** (manifest, icons, offline SW). **Placeholder:** Trace (camera — coming soon).
+**PWA** (manifest, icons, offline SW). **Trace v1 shipped 2026-07** (see below).
 
 ### Done since
 - **Arsenal** — create/edit/delete balls (cover/core/weight/surface/layout) + stock balls with
@@ -29,7 +29,13 @@ strike%, first-ball avg, spare/makable/split %, most-left pins, by pattern/volum
 - **ML on journal data** (future): journal = labelled dataset (read/decision → actual leave/outcome,
   now linked per-frame). k-NN ("situations like this, X worked"), decision-tree adjustment
   suggestions, misread-pattern matching. Keep capturing structured, frame-linked data (Phase 2 does).
-- **Trace** (camera ball-tracking); attach `virtuallanes.app`; fold roster/arsenal into export/import.
+- **Trace v1 — DONE (2026-07,** plan + status in `trace-implementation-plan.md`**):** clip import,
+  tap-corner calibration (loupe, reused across a session), lane-masked frame-diff scan, top-down
+  track + metrics (smoothed breakpoint/entry for shot-to-shot consistency), observed-vs-measured
+  breakpoint offset, TraceRecord in shared history, full-device backup v2 (arsenal/rivals/centres/
+  profile included in export/import). Awaiting first real-clip field test. Deferred: revs, live
+  mode, auto corner detect, trace↔game linking.
+- Attach `virtuallanes.app`.
 
 ## Vision
 
