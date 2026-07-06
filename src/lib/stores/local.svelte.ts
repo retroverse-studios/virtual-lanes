@@ -115,4 +115,18 @@ export abstract class StockedStore<T extends { id: string }> {
 		this.hidden = this.hidden.filter((h) => h !== id);
 		this.persist();
 	}
+
+	/** Serializable copy of the user-owned state, for backup export. */
+	snapshot(): StockedState<T> {
+		return { custom: this.custom.map((r) => ({ ...r })), hidden: [...this.hidden] };
+	}
+	/** Replace state from an imported backup. Returns false (untouched) on malformed input. */
+	restore(raw: unknown): boolean {
+		const s = this.hydrate(raw);
+		if (!s) return false;
+		this.custom = s.custom;
+		this.hidden = s.hidden;
+		this.persist();
+		return true;
+	}
 }

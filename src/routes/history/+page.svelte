@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { history } from '$lib/history.svelte';
 	import StatsView from '$lib/StatsView.svelte';
+	import TopDown from '$lib/trace/TopDown.svelte';
 	import type { GameRecord } from '$lib/engine/types';
 
-	// Typed Record over the mode union: adding a mode (e.g. 'trace') won't compile
+	// Typed Record over the mode union: adding a mode won't compile
 	// until this card knows how to label it.
-	const MODE_LABEL: Record<GameRecord['mode'], string> = { bowloff: '🎳 Bowl-off', journal: '📖 Journal' };
+	const MODE_LABEL: Record<GameRecord['mode'], string> = { bowloff: '🎳 Bowl-off', journal: '📖 Journal', trace: '🎥 Trace' };
 
 	let games = $derived(history.games);
 	let view = $state<'games' | 'stats'>('games');
@@ -73,6 +74,23 @@
 						{#if rr.judged}<span class="res" style="color:{rr.matched === rr.judged ? 'var(--me)' : 'var(--gold)'}">read {rr.matched}/{rr.judged}</span>{/if}
 					</div>
 					<div class="meta">{g.alley}{g.pattern ? ` · ${g.pattern}` : ''}{g.ball ? ` · ${g.ball}` : ''}</div>
+				{:else if g.mode === 'trace'}
+					<div class="tracerow">
+						<TopDown track={g.track} metrics={g.metrics} hand={g.handedness} compact />
+						<div>
+							{#if g.metrics}
+								<div class="mid">
+									<span class="score">{g.metrics.speedMph}</span>
+									<span class="res" style="color:var(--dim);font-weight:600">mph</span>
+									<span class="res" style="color:var(--gold)">{g.metrics.entryAngleDeg}° entry</span>
+								</div>
+								<div class="meta">laydown {g.metrics.laydownBoard} → break {g.metrics.breakpointBoard}@{g.metrics.breakpointFt}ft → entry {g.metrics.entryBoard}</div>
+							{:else}
+								<div class="mid"><span class="score">{g.track.length}</span><span class="res" style="color:var(--dim);font-weight:600">track points</span></div>
+							{/if}
+							<div class="meta">{g.alley}{g.clipName ? ` · ${g.clipName}` : ''}</div>
+						</div>
+					</div>
 				{/if}
 			</div>
 		{/each}
@@ -130,6 +148,12 @@
 	.vs {
 		font-size: 12px;
 		color: var(--opp);
+		margin-top: 4px;
+	}
+	.tracerow {
+		display: flex;
+		gap: 12px;
+		align-items: center;
 		margin-top: 4px;
 	}
 </style>

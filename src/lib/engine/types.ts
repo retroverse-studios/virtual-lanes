@@ -148,15 +148,42 @@ export interface JournalRecord extends GameBase {
 	shots?: JournalShot[];
 }
 
+/** One tracked ball position (lane coords: x = boards from the right gutter, y = ft from foul). */
+export interface TraceRecordPoint {
+	t: number;
+	lane: [number, number];
+}
+
+/** A camera-tracked shot (Trace mode). The video itself is NEVER stored — only the
+ * calibration, a downsampled track, and the derived metrics. */
+export interface TraceRecord extends GameBase {
+	mode: 'trace';
+	clipName?: string;
+	calibration: { corners: [number, number][]; homography: number[] };
+	track: TraceRecordPoint[]; // ≤200 points
+	metrics: {
+		laydownBoard: number;
+		breakpointBoard: number;
+		breakpointFt: number;
+		entryBoard: number;
+		entryAngleDeg: number;
+		speedMph: number;
+		pocketOffsetBoards: number;
+	} | null; // null when the track was too thin for honest numbers
+	handedness: 'left' | 'right';
+	note?: string;
+	gameId?: string; // future: link a trace to a bowl-off/journal game + frame
+	frame?: number;
+}
+
 /**
  * The shared, persisted history record — a union discriminated on `mode`, so every
- * consumer switches exhaustively and the compiler flags them all when a mode is added
- * (Trace lands as a `TraceRecord` variant here).
+ * consumer switches exhaustively and the compiler flags them all when a mode is added.
  */
-export type GameRecord = BowloffRecord | JournalRecord;
+export type GameRecord = BowloffRecord | JournalRecord | TraceRecord;
 
 // `satisfies Record<mode, true>` makes this fail to compile if the union gains a mode
 // that isn't listed — the point of the union is that consumers can't silently lag.
-const ALL_MODES = { bowloff: true, journal: true } satisfies Record<GameRecord['mode'], true>;
+const ALL_MODES = { bowloff: true, journal: true, trace: true } satisfies Record<GameRecord['mode'], true>;
 /** All valid record modes, derived from the union — used to validate imports. */
 export const GAME_MODES = Object.keys(ALL_MODES) as GameRecord['mode'][];

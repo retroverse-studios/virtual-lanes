@@ -3,6 +3,8 @@
 	import { history } from '$lib/history.svelte';
 	import { STYLE_PRESETS } from '$lib/engine/personas';
 	import { centres } from '$lib/centres.svelte';
+	import { arsenal } from '$lib/arsenal.svelte';
+	import { roster } from '$lib/roster.svelte';
 
 	function pickCentre(id: string) {
 		const c = centres.available.find((x) => x.id === id);
@@ -15,8 +17,19 @@
 	let importMsg = $state('');
 
 	function exportData() {
+		// v2: the FULL device state — games plus custom arsenal/rivals/centres and the
+		// profile — so a backup really can move everything to another phone.
 		const payload = JSON.stringify(
-			{ app: 'virtuallanes', version: 1, exportedAt: new Date().toISOString(), games: history.games },
+			{
+				app: 'virtuallanes',
+				version: 2,
+				exportedAt: new Date().toISOString(),
+				games: history.games,
+				arsenal: arsenal.snapshot(),
+				rivals: roster.snapshot(),
+				centres: centres.snapshot(),
+				setup: g.setupSnapshot()
+			},
 			null,
 			2
 		);
@@ -38,7 +51,15 @@
 			const games = Array.isArray(parsed) ? parsed : parsed.games;
 			if (!Array.isArray(games)) throw new Error('no games');
 			const added = history.import(games, false);
-			importMsg = `Imported ${added} new game${added === 1 ? '' : 's'}${games.length - added > 0 ? ` (${games.length - added} already present)` : ''}.`;
+			// v2 backups also carry arsenal/rivals/centres/profile — restore what's present
+			const extras: string[] = [];
+			if (!Array.isArray(parsed)) {
+				if (parsed.arsenal && arsenal.restore(parsed.arsenal)) extras.push('arsenal');
+				if (parsed.rivals && roster.restore(parsed.rivals)) extras.push('rivals');
+				if (parsed.centres && centres.restore(parsed.centres)) extras.push('centres');
+				if (parsed.setup && g.restoreSetup(parsed.setup)) extras.push('profile');
+			}
+			importMsg = `Imported ${added} new game${added === 1 ? '' : 's'}${games.length - added > 0 ? ` (${games.length - added} already present)` : ''}${extras.length ? ` + ${extras.join(', ')}` : ''}.`;
 		} catch {
 			importMsg = 'Import failed — not a valid VirtualLanes export file.';
 		}
@@ -102,7 +123,7 @@
 		<div class="msg warn">⚠ Storage full or unavailable — recent changes may not have saved. Use Export backup to keep your data.</div>
 	{/if}
 	<div class="btns">
-		<button class="cta sub" onclick={exportData} disabled={!history.games.length}>⤓ Export backup</button>
+		<button class="cta sub" onclick={exportData}>⤓ Export backup</button>
 		<label class="cta sub">
 			⤒ Import backup
 			<input type="file" accept="application/json,.json" onchange={onFile} hidden />

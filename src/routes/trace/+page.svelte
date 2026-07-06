@@ -3,6 +3,7 @@
 	import ClipLoader from '$lib/trace/ClipLoader.svelte';
 	import TopDown from '$lib/trace/TopDown.svelte';
 	import { t } from '$lib/trace/state.svelte';
+	import { history } from '$lib/history.svelte';
 
 	let videoEl = $state<HTMLVideoElement>();
 	$effect(() => {
@@ -75,12 +76,16 @@
 					Rough &amp; relative — compare against your own shots, not absolutes.</p>
 			</div>
 		</div>
+		{#if t.savedId}
+			<p class="dimnote">✓ Saved to History{history.writeFailed ? ' (in memory only — storage is full or blocked; export a backup soon)' : ''}</p>
+		{:else}
+			<button class="cta wide" onclick={() => t.save()}>💾 Save to History</button>
+		{/if}
 		<div class="controls">
 			<button class="ghost" onclick={() => { t.step = 'scan'; }}>↺ Rescan</button>
 			<button class="ghost" onclick={() => t.recalibrate()}>Calibration</button>
 			<button class="ghost" onclick={() => t.backToLoad()}>← New clip</button>
 		</div>
-		<p class="dimnote">Saving to History lands in the next build.</p>
 	{/if}
 </div>
 

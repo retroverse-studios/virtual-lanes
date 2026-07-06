@@ -3,7 +3,12 @@
 	import type { TracePoint } from './cv/metrics';
 	import type { TraceMetrics } from './cv/metrics';
 
-	let { track, metrics = null, hand = 'right' }: { track: TracePoint[]; metrics?: TraceMetrics | null; hand?: 'left' | 'right' } = $props();
+	let {
+		track,
+		metrics = null,
+		hand = 'right',
+		compact = false
+	}: { track: TracePoint[]; metrics?: TraceMetrics | null; hand?: 'left' | 'right'; compact?: boolean } = $props();
 
 	// SVG geometry (matches the old mock): lane rect at x 15..115, y 10..290, pins at top
 	const LX = 15,
@@ -20,7 +25,7 @@
 	let last = $derived(track[track.length - 1]);
 </script>
 
-<svg viewBox="0 0 130 300" role="img" aria-label="Top-down lane with the tracked ball path">
+<svg viewBox="0 0 130 300" class:compact role="img" aria-label="Top-down lane with the tracked ball path">
 	<rect x={LX} y={LY} width={LW} height={LH} rx="3" fill="#0d1326" stroke="var(--line)" />
 	<!-- board lines every 5 boards -->
 	{#each [5, 10, 15, 20, 25, 30, 35] as bd (bd)}
@@ -32,8 +37,10 @@
 	{/each}
 	<!-- pocket marker -->
 	<rect x={pocketX - 4} y={LY + 4} width="8" height="4" rx="1.5" fill="#ff7a59" />
-	<text x={LX + 4} y={LY + 12} class="lbl">pins</text>
-	<text x={LX + 4} y={LY + LH - 5} class="lbl">foul</text>
+	{#if !compact}
+		<text x={LX + 4} y={LY + 12} class="lbl">pins</text>
+		<text x={LX + 4} y={LY + LH - 5} class="lbl">foul</text>
+	{/if}
 
 	{#if track.length}
 		<path d={path} fill="none" stroke="var(--me)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
@@ -55,6 +62,12 @@
 		border-radius: 14px;
 		padding: 8px;
 		display: block;
+	}
+	svg.compact {
+		max-width: 56px;
+		padding: 3px;
+		border-radius: 8px;
+		background: #0d1326;
 	}
 	.lbl {
 		fill: var(--dim);

@@ -2,10 +2,12 @@
 // Session-only except the last calibration, which is remembered as a starting
 // guess (a propped phone barely moves between shots at the same centre).
 import { readJSON, writeJSON } from '$lib/stores/local.svelte';
+import { history, History } from '$lib/history.svelte';
+import type { TraceRecord } from '$lib/engine/types';
 import { applyHomography, isPlausibleLaneHomography, isValidCornerOrder, laneHomography, type Pt } from './cv/homography';
 import { diffMask, grayscale, largestBlob } from './cv/blob';
 import { applyLaneMask, buildTrack, quadMask, type RawHit } from './cv/scan';
-import { computeMetrics, type Handedness, type TraceMetrics, type TracePoint } from './cv/metrics';
+import { computeMetrics, downsampleTrack, type Handedness, type TraceMetrics, type TracePoint } from './cv/metrics';
 
 export type TraceStep = 'load' | 'calibrate' | 'scan' | 'results';
 
@@ -59,6 +61,7 @@ export class Trace {
 		this.calibError = '';
 		this.track = [];
 		this.metrics = null;
+		this.savedId = null;
 		this.step = 'load';
 	}
 
@@ -145,6 +148,8 @@ export class Trace {
 	scanning = $state(false);
 	scanProgress = $state(0); // 0..1
 	scanError = $state('');
+	/** Set once the current track has been saved to history (guards double-save). */
+	savedId = $state<string | null>(null);
 
 	/** Bowler's hand flips the breakpoint logic; read from the shared profile. */
 	handedness(): Handedness {
@@ -163,6 +168,7 @@ export class Trace {
 		this.scanError = '';
 		this.track = [];
 		this.metrics = null;
+		this.savedId = null;
 		try {
 			const SW = 192;
 			const SH = Math.max(2, Math.round((SW * this.clip.height) / this.clip.width));
@@ -211,6 +217,29 @@ export class Trace {
 		}
 	}
 
+	/** Persist the tracked shot to the shared history. Never the video — only the
+	 *  calibration, a downsampled track, and the derived metrics (~10 KB). */
+	save() {
+		if (!this.clip || !this.H || this.track.length < 5 || this.savedId) return;
+		const setup = readJSON<{ cond?: { alley?: string } }>('vl.bowloff.setup.v1');
+		const rec: TraceRecord = {
+			id: History.newId(),
+			date: new Date().toISOString(),
+			mode: 'trace',
+			alley: setup?.cond?.alley ?? 'Lanes',
+			clipName: this.clip.name,
+			calibration: { corners: this.corners.map((c) => [...c] as [number, number]), homography: [...this.H] },
+			track: downsampleTrack(this.track, 200).map((p) => ({
+				t: Math.round(p.t * 1000) / 1000,
+				lane: [Math.round(p.lane[0] * 100) / 100, Math.round(p.lane[1] * 100) / 100]
+			})),
+			metrics: this.metrics,
+			handedness: this.handedness()
+		};
+		history.add(rec);
+		this.savedId = rec.id;
+	}
+
 	reset() {
 		this.clip = null;
 		this.video = null;
@@ -220,6 +249,7 @@ export class Trace {
 		this.calibError = '';
 		this.track = [];
 		this.metrics = null;
+		this.savedId = null;
 		this.step = 'load';
 	}
 }

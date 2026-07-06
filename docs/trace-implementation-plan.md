@@ -52,10 +52,13 @@
 
 ## Phase 5 — Save to shared history
 
-- [ ] `TraceRecord` variant (per the sketch in product-direction.md) saved via `history`
-- [ ] History card with mini top-down path
-- [ ] Optional link to a game/frame (sit beside the journaled shot)
-- [ ] Include trace records (and arsenal/rivals/centres/profile) in export/import
+- [x] `TraceRecord` variant (per the sketch in product-direction.md) saved via `history`
+      (double-save guard; writeFailed surfaced on the results screen)
+- [ ] Optional link to a game/frame (sit beside the journaled shot) — deferred, `gameId`/`frame`
+      fields already on the record
+- [x] History card with mini top-down path
+- [x] Include trace records (and arsenal/rivals/centres/profile) in export/import
+      (backup payload v2; v1 and bare-array imports still accepted)
 
 ## Deferred
 

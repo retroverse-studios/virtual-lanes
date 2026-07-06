@@ -133,6 +133,21 @@ class BowlOff {
 	saveSetup() {
 		writeJSON(SETUP_KEY, { cond: this.cond, human: this.human, selectedIds: this.selectedIds, cfg: this.cfg });
 	}
+	/** Serializable copy of the setup/profile, for backup export. */
+	setupSnapshot() {
+		return { cond: { ...this.cond }, human: { ...this.human }, selectedIds: [...this.selectedIds], cfg: { ...this.cfg } };
+	}
+	/** Replace the setup/profile from an imported backup. Returns false on malformed input. */
+	restoreSetup(raw: unknown): boolean {
+		const s = raw as Partial<{ cond: LaneCondition; human: HumanProfile; selectedIds: string[]; cfg: Cfg }> | null;
+		if (!s || typeof s !== 'object' || (!s.cond && !s.human && !s.cfg)) return false;
+		if (s.cond) this.cond = { ...this.cond, ...s.cond };
+		if (s.human) this.human = { ...this.human, ...s.human };
+		if (Array.isArray(s.selectedIds)) this.selectedIds = s.selectedIds;
+		if (s.cfg) this.cfg = { ...this.cfg, ...s.cfg };
+		this.saveSetup();
+		return true;
+	}
 
 	/* ---------- live-game checkpoint (durability across refresh / PWA eviction) ---------- */
 	#checkpoint() {
