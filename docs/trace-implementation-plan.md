@@ -17,12 +17,13 @@
 
 ## Phase 1 — Plumbing: clip import + scrubbing
 
-- [ ] `src/lib/trace/` module: `state.svelte.ts` session state machine
+- [x] `src/lib/trace/` module: `state.svelte.ts` session state machine
       (load → calibrate → scan → results → save)
-- [ ] Pure CV modules with Vitest coverage (same style as `bowling.test.ts`):
+- [x] Pure CV modules with Vitest coverage (same style as `bowling.test.ts`):
       `cv/homography.ts` (solveH/applyH), `cv/blob.ts` (gray/diff/largest-blob),
       `cv/metrics.ts` (laydown/breakpoint/entry/speed from a track)
-- [ ] `/trace` route: replace coming-soon with ClipLoader (file input → `<video>` + scrub canvas)
+      — lane coords locked: x = boards from the RIGHT gutter (0–39), y = ft from foul (0–60)
+- [x] `/trace` route: replace coming-soon with ClipLoader (file input → `<video>` + scrub canvas)
 
 ## Phase 2 — Calibration
 

@@ -24,6 +24,11 @@ pnpm dlx sirv-cli build --single 200.html --port 4200   # SW/offline tests (see 
   there. Use the sirv command above — it matches Cloudflare Pages semantics
   (static files + 200.html fallback). Live check: `virtual-lanes.pages.dev/200.html` → 200.
 - Rebuilding while `vite preview` is running kills the preview process.
+- A preview that outlives a rebuild serves STALE chunk manifests (page HTML 200s but
+  hashed `_app/immutable/*` chunks 404 → hydration silently fails). Kill it with
+  `lsof -ti :4199 | xargs kill` — `pkill -f "vite preview"` does NOT match (the
+  process cmdline is `vite.js preview`).
+- Test video for the Trace clip loader: `ffmpeg -f lavfi -i "testsrc2=size=640x360:rate=30:duration=2" -pix_fmt yuv420p clip.mp4` then `setInputFiles`.
 
 ## Drive (playwright-core + installed Chrome)
 
