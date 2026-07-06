@@ -34,11 +34,13 @@
 
 ## Phase 3 — Ball scan
 
-- [ ] Frame-diff scan ported from prototype, plus the fixes it punted on:
-  - [ ] restrict diff mask to the calibrated lane quad (ignore the bowler/arm)
-  - [ ] real monotonic-progress filter (prototype only sorts by time)
-  - [ ] drop pre-release frames; interpolate blur gaps
-- [ ] Pixel processing in a Web Worker (transfer ImageData); seek loop stays on main thread
+- [x] Frame-diff scan ported from prototype, plus the fixes it punted on:
+  - [x] restrict diff mask to the calibrated lane quad (ignore the bowler/arm)
+  - [x] real monotonic-progress filter (prototype only sorts by time)
+  - [x] drop out-of-lane/pre-release hits; interpolate blur gaps (median-dt, capped)
+- [x] ~~Web Worker~~ — processing at 192 px is sub-ms/frame, so it runs inline (the async
+      seek loop already yields to the UI). cv/ stays DOM-free, so a worker move is
+      mechanical if higher-res processing ever needs it.
 - [ ] (Later option) WebCodecs VideoDecoder fast path with seek-loop fallback
 
 ## Phase 4 — Metrics + results

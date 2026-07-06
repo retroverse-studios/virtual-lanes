@@ -2,8 +2,10 @@
 // Session-only except the last calibration, which is remembered as a starting
 // guess (a propped phone barely moves between shots at the same centre).
 import { readJSON, writeJSON } from '$lib/stores/local.svelte';
-import { isPlausibleLaneHomography, isValidCornerOrder, laneHomography, type Pt } from './cv/homography';
-import type { TraceMetrics, TracePoint } from './cv/metrics';
+import { applyHomography, isPlausibleLaneHomography, isValidCornerOrder, laneHomography, type Pt } from './cv/homography';
+import { diffMask, grayscale, largestBlob } from './cv/blob';
+import { applyLaneMask, buildTrack, quadMask, type RawHit } from './cv/scan';
+import { computeMetrics, type Handedness, type TraceMetrics, type TracePoint } from './cv/metrics';
 
 export type TraceStep = 'load' | 'calibrate' | 'scan' | 'results';
 
@@ -137,6 +139,76 @@ export class Trace {
 	}
 	backToLoad() {
 		this.step = 'load';
+	}
+
+	/* ---------- ball scan ---------- */
+	scanning = $state(false);
+	scanProgress = $state(0); // 0..1
+	scanError = $state('');
+
+	/** Bowler's hand flips the breakpoint logic; read from the shared profile. */
+	handedness(): Handedness {
+		return readJSON<{ human?: { handedness?: Handedness } }>('vl.bowloff.setup.v1')?.human?.handedness ?? 'right';
+	}
+
+	/**
+	 * Seek through the clip (~30 samples/s), frame-diff inside the calibrated lane
+	 * quad, and assemble the track. Processing is ~200px wide — sub-ms per frame —
+	 * so it runs inline; the seek loop itself yields to the UI between frames.
+	 */
+	async scan() {
+		const v = this.video;
+		if (!v || !this.H || !this.clip || this.scanning) return;
+		this.scanning = true;
+		this.scanError = '';
+		this.track = [];
+		this.metrics = null;
+		try {
+			const SW = 192;
+			const SH = Math.max(2, Math.round((SW * this.clip.height) / this.clip.width));
+			const work = document.createElement('canvas');
+			work.width = SW;
+			work.height = SH;
+			const ctx = work.getContext('2d', { willReadFrequently: true })!;
+			const lane = quadMask(this.corners, SW, SH, this.clip.width, this.clip.height);
+			const H = this.H;
+			const raw: RawHit[] = [];
+			let prev: Uint8Array | null = null;
+			const seekTo = (time: number) =>
+				new Promise<void>((res) => {
+					if (Math.abs(v.currentTime - time) < 1e-4 && v.readyState >= 2) return res();
+					v.addEventListener('seeked', () => res(), { once: true });
+					v.currentTime = time;
+				});
+			v.pause();
+			const step = 1 / 30;
+			for (let time = 0; time < this.clip.duration; time += step) {
+				await seekTo(time);
+				ctx.drawImage(v, 0, 0, SW, SH);
+				const cur = grayscale(ctx.getImageData(0, 0, SW, SH).data, SW, SH);
+				if (prev) {
+					const mask = applyLaneMask(diffMask(cur, prev), lane);
+					const blob = largestBlob(mask, SW, SH);
+					if (blob && blob.size >= 3) {
+						const vx = ((blob.cx + 0.5) / SW) * this.clip.width;
+						const vy = ((blob.cy + 0.5) / SH) * this.clip.height;
+						raw.push({ t: time, lane: applyHomography(H, [vx, vy]) });
+					}
+				}
+				prev = cur;
+				this.scanProgress = time / this.clip.duration;
+			}
+			this.track = buildTrack(raw);
+			this.metrics = computeMetrics(this.track, this.handedness());
+			if (this.track.length < 5) {
+				this.scanError = 'No moving ball found on the lane — try a clearer clip, or re-check the corner taps.';
+			} else {
+				this.step = 'results';
+			}
+		} finally {
+			this.scanning = false;
+			this.scanProgress = 0;
+		}
 	}
 
 	reset() {

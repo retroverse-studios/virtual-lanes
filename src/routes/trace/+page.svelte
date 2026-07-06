@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Calibrate from '$lib/trace/Calibrate.svelte';
 	import ClipLoader from '$lib/trace/ClipLoader.svelte';
+	import TopDown from '$lib/trace/TopDown.svelte';
 	import { t } from '$lib/trace/state.svelte';
 
 	let videoEl = $state<HTMLVideoElement>();
@@ -42,16 +43,44 @@
 		<div class="soon">
 			<strong>✓ Lane calibrated</strong>
 			<p style="margin:8px 0 0">
-				The camera view is now mapped to the real lane (39 boards × 60 ft).
-				Next build: scan the clip for the ball and draw the top-down track.
+				The camera view is mapped to the real lane (39 boards × 60 ft). The scan
+				frame-diffs the clip inside that quad and tracks the biggest moving thing — the ball.
 			</p>
 		</div>
-		<button class="cta wide" disabled>Scan for the ball →</button>
-		<p class="dimnote">Ball scan lands in the next build.</p>
-		<div class="controls">
-			<button class="ghost" onclick={() => t.recalibrate()}>↺ Adjust calibration</button>
-			<button class="ghost" onclick={() => t.backToLoad()}>← Different clip</button>
+		{#if t.scanning}
+			<div class="progress"><div class="bar" style="width:{Math.round(t.scanProgress * 100)}%"></div></div>
+			<p class="dimnote">Scanning… {Math.round(t.scanProgress * 100)}%</p>
+		{:else}
+			<button class="cta wide" onclick={() => t.scan()}>▶ Scan for the ball</button>
+			{#if t.scanError}<p class="err">{t.scanError}</p>{/if}
+			<div class="controls">
+				<button class="ghost" onclick={() => t.recalibrate()}>↺ Adjust calibration</button>
+				<button class="ghost" onclick={() => t.backToLoad()}>← Different clip</button>
+			</div>
+		{/if}
+	{:else if t.step === 'results'}
+		<div class="results">
+			<TopDown track={t.track} metrics={t.metrics} hand={t.handedness()} />
+			<div class="side">
+				{#if t.metrics}
+					{@const m = t.metrics}
+					<span class="metric">laydown <b>{m.laydownBoard}</b></span>
+					<span class="metric">breakpoint <b>{m.breakpointBoard}</b> @ {m.breakpointFt}ft</span>
+					<span class="metric">entry <b>{m.entryBoard}</b> · {m.entryAngleDeg}°</span>
+					<span class="metric">speed <b>{m.speedMph}</b> mph</span>
+				{:else}
+					<p class="dimnote" style="text-align:left">Track found, but too thin for honest numbers — the path is drawn as-is.</p>
+				{/if}
+				<p class="fine">{t.track.length} track points · boards from the right gutter · revs not measured.
+					Rough &amp; relative — compare against your own shots, not absolutes.</p>
+			</div>
 		</div>
+		<div class="controls">
+			<button class="ghost" onclick={() => { t.step = 'scan'; }}>↺ Rescan</button>
+			<button class="ghost" onclick={() => t.recalibrate()}>Calibration</button>
+			<button class="ghost" onclick={() => t.backToLoad()}>← New clip</button>
+		</div>
+		<p class="dimnote">Saving to History lands in the next build.</p>
 	{/if}
 </div>
 
@@ -95,5 +124,53 @@
 		gap: 8px;
 		margin-top: 10px;
 		justify-content: center;
+	}
+	.progress {
+		height: 10px;
+		border-radius: 999px;
+		background: var(--panel);
+		border: 1px solid var(--line);
+		overflow: hidden;
+		margin-top: 14px;
+	}
+	.progress .bar {
+		height: 100%;
+		background: var(--accent, #6c8cff);
+		transition: width 0.15s linear;
+	}
+	.err {
+		color: var(--opp, #ff7a59);
+		font-size: 13px;
+		margin: 8px 0 0;
+		text-align: center;
+	}
+	.results {
+		display: flex;
+		gap: 14px;
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+	.results .side {
+		flex: 1;
+		min-width: 130px;
+	}
+	.metric {
+		display: inline-block;
+		background: var(--panel);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		padding: 7px 11px;
+		margin: 0 6px 6px 0;
+		font-size: 13px;
+	}
+	.metric b {
+		color: var(--gold);
+		font-size: 17px;
+	}
+	.fine {
+		color: var(--dim);
+		font-size: 11px;
+		line-height: 1.45;
+		margin: 6px 0 0;
 	}
 </style>
