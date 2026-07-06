@@ -21,7 +21,13 @@
 		<p class="lede">Film a shot and let the app track the ball — see what actually happened, not just what you read.</p>
 		<ClipLoader />
 		{#if t.hasClip}
-			<button class="cta wide" onclick={() => t.startCalibrate()}>Calibrate lane corners →</button>
+			{#if t.savedCalibrationMatches}
+				<button class="cta wide" onclick={() => { if (!t.useSavedCalibration()) t.startCalibrate(); }}>⚡ Reuse last calibration → scan</button>
+				<p class="dimnote">Phone hasn’t moved since the last shot? Reusing keeps every shot on the identical ruler — differences you see are bowling, not thumbs.</p>
+				<div class="controls"><button class="ghost" onclick={() => t.startCalibrate()}>✎ Re-tap the corners</button></div>
+			{:else}
+				<button class="cta wide" onclick={() => t.startCalibrate()}>Calibrate lane corners →</button>
+			{/if}
 		{:else}
 			<div class="soon" style="margin-top:14px">
 				<strong>How to film</strong>
@@ -79,7 +85,29 @@
 		{#if t.savedId}
 			<p class="dimnote">✓ Saved to History{history.writeFailed ? ' (in memory only — storage is full or blocked; export a backup soon)' : ''}</p>
 		{:else}
+			{#if t.metrics}
+				<div class="obsrow">
+					<label for="obs">Breakpoint <em>you</em> saw <span>(optional)</span></label>
+					<input
+						id="obs"
+						type="number"
+						min="1"
+						max="39"
+						inputmode="numeric"
+						placeholder="board"
+						value={t.observedBreakpoint ?? ''}
+						oninput={(e) => (t.observedBreakpoint = e.currentTarget.value === '' ? null : +e.currentTarget.value)}
+					/>
+				</div>
+			{/if}
 			<button class="cta wide" onclick={() => t.save()}>💾 Save to History</button>
+		{/if}
+		{#if t.eyeOffset()}
+			{@const off = t.eyeOffset()!}
+			<p class="fine" style="text-align:center">
+				👁 Your eye reads breakpoints {off.boards === 0 ? 'dead on the camera' : `${off.boards > 0 ? '+' : ''}${off.boards} board${Math.abs(off.boards) === 1 ? '' : 's'} vs the camera`}
+				(median of {off.n} shots). A steady offset means the tracker is consistent — trust the differences.
+			</p>
 		{/if}
 		<div class="controls">
 			<button class="ghost" onclick={() => { t.step = 'scan'; }}>↺ Rescan</button>
@@ -177,5 +205,29 @@
 		font-size: 11px;
 		line-height: 1.45;
 		margin: 6px 0 0;
+	}
+	.obsrow {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		justify-content: center;
+		margin-top: 12px;
+	}
+	.obsrow label {
+		font-size: 13px;
+		color: var(--dim);
+	}
+	.obsrow label span {
+		font-size: 11px;
+	}
+	.obsrow input {
+		width: 76px;
+		background: var(--panel);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		color: var(--ink);
+		padding: 8px 10px;
+		font: inherit;
+		text-align: center;
 	}
 </style>

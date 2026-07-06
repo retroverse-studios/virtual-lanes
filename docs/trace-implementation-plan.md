@@ -60,6 +60,18 @@
 - [x] Include trace records (and arsenal/rivals/centres/profile) in export/import
       (backup payload v2; v1 and bare-array imports still accepted)
 
+## Phase 6 — Measurement consistency (relative > absolute)
+
+The product is shot-to-shot DIFFERENCES; systematic bias is harmless, variance is the enemy.
+
+- [x] Smooth lane-x (window 3, endpoints exact) before deriving breakpoint + entry angle;
+      raw track still drawn/stored. Jitter tests: same shot ±noise reads the same breakpoint ±1.
+- [x] "⚡ Reuse last calibration → scan" on the load step when the saved calibration matches
+      the clip resolution — one ruler for the whole session, re-tap stays available.
+- [x] Observed breakpoint (optional, subjective) stored beside the measured one;
+      after ≥3 observations show the median eye-vs-camera offset as an insight —
+      never silently applied (a steady offset is itself evidence of consistency).
+
 ## Deferred
 
 Auto corner detection (Canny/Hough) · live mode (Capacitor for 120/240 fps) ·

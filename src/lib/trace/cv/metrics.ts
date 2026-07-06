@@ -27,12 +27,36 @@ export interface TraceMetrics {
 const FT_PER_BOARD = BOARD_WIDTH_IN / 12;
 
 /**
+ * Centered moving average over the board (x) axis. The extremum-based metrics
+ * (breakpoint) and the final-segment slope (entry angle) are the noise-sensitive
+ * ones — smoothing x keeps them CONSISTENT between near-identical shots, which is
+ * the product ("relative > absolute"). The raw track is still what gets drawn/stored.
+ */
+export function smoothTrack(track: readonly TracePoint[], window = 3): TracePoint[] {
+	if (track.length < 3 || window < 3) return [...track];
+	const half = Math.floor(window / 2);
+	return track.map((p, i) => {
+		// endpoints stay raw: laydown/entry/pocket-offset must not be dragged inward
+		if (i === 0 || i === track.length - 1) return { t: p.t, lane: [p.lane[0], p.lane[1]] as [number, number] };
+		let sum = 0;
+		let n = 0;
+		for (let j = Math.max(0, i - half); j <= Math.min(track.length - 1, i + half); j++) {
+			sum += track[j].lane[0];
+			n++;
+		}
+		return { t: p.t, lane: [sum / n, p.lane[1]] as [number, number] };
+	});
+}
+
+/**
  * Compute shot metrics from a time-sorted track. Returns null when the track is too
  * thin to say anything honest (fewer than 3 points or <10 ft of travel).
+ * Breakpoint and entry angle are derived from a smoothed copy of the track so a
+ * single jittery point can't move them between otherwise identical shots.
  */
 export function computeMetrics(track: readonly TracePoint[], hand: Handedness = 'right'): TraceMetrics | null {
 	if (track.length < 3) return null;
-	const pts = [...track].sort((a, b) => a.t - b.t);
+	const pts = smoothTrack([...track].sort((a, b) => a.t - b.t));
 
 	// nearest the foul line / nearest the pins, by lane distance not by time —
 	// stray points survive upstream filtering occasionally.

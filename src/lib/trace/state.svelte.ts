@@ -62,6 +62,7 @@ export class Trace {
 		this.track = [];
 		this.metrics = null;
 		this.savedId = null;
+		this.observedBreakpoint = null;
 		this.step = 'load';
 	}
 
@@ -117,6 +118,25 @@ export class Trace {
 		return best;
 	}
 
+	/** True when a remembered calibration exists for this clip's exact resolution. */
+	get savedCalibrationMatches(): boolean {
+		if (!this.clip) return false;
+		const saved = readJSON<{ w: number; h: number; corners: Pt[] }>(CALIB_KEY);
+		return !!saved && saved.w === this.clip.width && saved.h === this.clip.height && Array.isArray(saved.corners) && saved.corners.length === 4;
+	}
+
+	/**
+	 * Skip the corner-tapping step and reuse the remembered calibration verbatim.
+	 * The point is CONSISTENCY: every shot in a session measured on the identical
+	 * ruler, so shot-to-shot differences are bowling, not thumb placement.
+	 */
+	useSavedCalibration(): boolean {
+		if (!this.savedCalibrationMatches) return false;
+		const saved = readJSON<{ w: number; h: number; corners: Pt[] }>(CALIB_KEY)!;
+		this.corners = saved.corners.map((c) => [...c] as Pt);
+		return this.computeCalibration();
+	}
+
 	/** Compute + validate the homography; on success remember it and advance to scan. */
 	computeCalibration(): boolean {
 		if (this.corners.length !== 4 || !this.clip) return false;
@@ -150,6 +170,22 @@ export class Trace {
 	scanError = $state('');
 	/** Set once the current track has been saved to history (guards double-save). */
 	savedId = $state<string | null>(null);
+	/** The breakpoint board the bowler SAW (optional, subjective) — stored beside the
+	 *  measured one so the eye-vs-camera offset can be tracked over time. */
+	observedBreakpoint = $state<number | null>(null);
+
+	/** Median (observed − measured) breakpoint across saved traces. Null under 3 samples.
+	 *  Shown as an insight, never silently applied — a STEADY offset is itself the
+	 *  evidence that the tracker is consistent. */
+	eyeOffset(): { boards: number; n: number } | null {
+		const deltas = history.games
+			.filter((g): g is TraceRecord => g.mode === 'trace')
+			.filter((g) => g.metrics && typeof g.observedBreakpoint === 'number')
+			.map((g) => g.observedBreakpoint! - g.metrics!.breakpointBoard);
+		if (deltas.length < 3) return null;
+		const sorted = [...deltas].sort((a, b) => a - b);
+		return { boards: sorted[Math.floor(sorted.length / 2)], n: deltas.length };
+	}
 
 	/** Bowler's hand flips the breakpoint logic; read from the shared profile. */
 	handedness(): Handedness {
@@ -169,6 +205,7 @@ export class Trace {
 		this.track = [];
 		this.metrics = null;
 		this.savedId = null;
+		this.observedBreakpoint = null;
 		try {
 			const SW = 192;
 			const SH = Math.max(2, Math.round((SW * this.clip.height) / this.clip.width));
@@ -234,7 +271,8 @@ export class Trace {
 				lane: [Math.round(p.lane[0] * 100) / 100, Math.round(p.lane[1] * 100) / 100]
 			})),
 			metrics: this.metrics,
-			handedness: this.handedness()
+			handedness: this.handedness(),
+			observedBreakpoint: this.observedBreakpoint ?? undefined
 		};
 		history.add(rec);
 		this.savedId = rec.id;

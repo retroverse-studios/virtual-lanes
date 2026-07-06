@@ -258,10 +258,12 @@ describe('simulation realism (wild-shot distribution)', () => {
 
 	it('a consistent bowler rarely throws sub-5 (wild shots scale with variance)', () => {
 		const straight = ROSTER.find((b) => b.id === 'buddy')!; // straight / low variance
-		// over many frames the consistent bowler throws far fewer wild shots than the cranker
-		const straightLows = firstBalls(straight, 400).filter((n) => n < 5).length;
-		const crankerLows = firstBalls(ROSTER.find((b) => b.id === 'reyes')!, 400).filter((n) => n < 5).length;
-		expect(straightLows).toBeLessThan(crankerLows);
+		// Over many frames the consistent bowler throws far fewer wild shots than the
+		// cranker. 2000 games + a 1.15× margin keeps this statistical test from being
+		// flaky (at 400 games the two counts occasionally crossed by a single shot).
+		const straightLows = firstBalls(straight, 2000).filter((n) => n < 5).length;
+		const crankerLows = firstBalls(ROSTER.find((b) => b.id === 'reyes')!, 2000).filter((n) => n < 5).length;
+		expect(straightLows * 1.15).toBeLessThan(crankerLows);
 	});
 });
 

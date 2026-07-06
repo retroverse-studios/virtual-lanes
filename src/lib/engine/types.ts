@@ -171,6 +171,9 @@ export interface TraceRecord extends GameBase {
 		pocketOffsetBoards: number;
 	} | null; // null when the track was too thin for honest numbers
 	handedness: 'left' | 'right';
+	/** Breakpoint board the bowler SAW (subjective) — kept beside the measured one so
+	 *  the eye-vs-camera offset can be tracked; never used to adjust the measurement. */
+	observedBreakpoint?: number;
 	note?: string;
 	gameId?: string; // future: link a trace to a bowl-off/journal game + frame
 	frame?: number;

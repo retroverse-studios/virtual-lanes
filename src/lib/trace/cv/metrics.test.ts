@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { computeMetrics, downsampleTrack, type TracePoint } from './metrics';
+import { computeMetrics, downsampleTrack, smoothTrack, type TracePoint } from './metrics';
+
+/** Deterministic pseudo-random (LCG) so jitter tests are reproducible. */
+function lcg(seed: number) {
+	let s = seed >>> 0;
+	return () => ((s = (s * 1664525 + 1013904223) >>> 0), s / 2 ** 32);
+}
+/** Add ± jitter (boards) to the x of every interior point. */
+function jitter(track: TracePoint[], amount: number, seed: number): TracePoint[] {
+	const rnd = lcg(seed);
+	return track.map((p, i) =>
+		i === 0 || i === track.length - 1 ? p : { t: p.t, lane: [p.lane[0] + (rnd() * 2 - 1) * amount, p.lane[1]] as [number, number] }
+	);
+}
 
 /** Synthetic hook: skid out from the laydown, breakpoint, then hook back to the pocket. */
 function hookTrack(opts: { hand: 'right' | 'left'; seconds?: number; points?: number }): TracePoint[] {
@@ -67,6 +80,43 @@ describe('computeMetrics guards', () => {
 	it('tolerates unsorted input', () => {
 		const shuffled = [...hookTrack({ hand: 'right' })].reverse();
 		expect(computeMetrics(shuffled, 'right')!.laydownBoard).toBe(19);
+	});
+});
+
+describe('measurement consistency under jitter (relative > absolute)', () => {
+	const clean = hookTrack({ hand: 'right' });
+	const cleanM = computeMetrics(clean, 'right')!;
+
+	it('breakpoint stays within ±1 board across noise seeds', () => {
+		for (const seed of [1, 7, 42, 99, 1234]) {
+			const m = computeMetrics(jitter(clean, 0.8, seed), 'right')!;
+			expect(Math.abs(m.breakpointBoard - cleanM.breakpointBoard)).toBeLessThanOrEqual(1);
+		}
+	});
+
+	it('two jittered versions of the SAME shot read the same breakpoint ±1', () => {
+		const a = computeMetrics(jitter(clean, 0.8, 5), 'right')!;
+		const b = computeMetrics(jitter(clean, 0.8, 6), 'right')!;
+		expect(Math.abs(a.breakpointBoard - b.breakpointBoard)).toBeLessThanOrEqual(1);
+	});
+
+	it('a single wild outlier cannot claim the breakpoint', () => {
+		const spiked = clean.map((p, i) => (i === 30 ? { t: p.t, lane: [p.lane[0] - 6, p.lane[1]] as [number, number] } : p));
+		const m = computeMetrics(spiked, 'right')!;
+		expect(Math.abs(m.breakpointBoard - cleanM.breakpointBoard)).toBeLessThanOrEqual(2);
+	});
+
+	it('entry angle is stable within ~1.5° under jitter', () => {
+		for (const seed of [3, 11]) {
+			const m = computeMetrics(jitter(clean, 0.5, seed), 'right')!;
+			expect(Math.abs(m.entryAngleDeg - cleanM.entryAngleDeg)).toBeLessThanOrEqual(1.5);
+		}
+	});
+
+	it('smoothTrack keeps endpoints exact', () => {
+		const s = smoothTrack(jitter(clean, 0.8, 42));
+		expect(s[0]).toEqual(clean[0]);
+		expect(s[s.length - 1]).toEqual(clean[clean.length - 1]);
 	});
 });
 
