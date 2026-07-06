@@ -1,7 +1,13 @@
 // Shared game history — one timeline for both modes, persisted to localStorage.
 import { browser } from '$app/environment';
 import { newId, readJSON, writeJSON } from '$lib/stores/local.svelte';
-import type { GameRecord } from '$lib/engine/types';
+import { GAME_MODES, type GameRecord } from '$lib/engine/types';
+
+/** Minimal shape check for records coming from an import file (untrusted JSON). */
+function isValidRecord(g: unknown): g is GameRecord {
+	const r = g as GameRecord | null;
+	return !!r && typeof r.id === 'string' && typeof r.date === 'string' && !isNaN(Date.parse(r.date)) && GAME_MODES.includes(r.mode);
+}
 
 const KEY = 'vl.games.v1';
 
@@ -39,15 +45,16 @@ export class History {
 		this.games = [];
 		this.#persist();
 	}
-	/** Merge (or replace) imported games. Returns how many new ones were added. */
-	import(incoming: GameRecord[], replace = false): number {
+	/** Merge (or replace) imported games, dropping malformed records. Returns how many were added. */
+	import(incoming: unknown[], replace = false): number {
+		const valid = incoming.filter(isValidRecord);
 		if (replace) {
-			this.games = incoming;
+			this.games = valid;
 			this.#persist();
-			return incoming.length;
+			return valid.length;
 		}
 		const have = new Set(this.games.map((g) => g.id));
-		const fresh = incoming.filter((g) => g && g.id && !have.has(g.id));
+		const fresh = valid.filter((g) => !have.has(g.id));
 		this.games = [...fresh, ...this.games].sort((a, b) => (a.date < b.date ? 1 : -1));
 		this.#persist();
 		return fresh.length;

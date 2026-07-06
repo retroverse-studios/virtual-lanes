@@ -117,16 +117,16 @@ export interface JournalShot {
 	frame?: number; // which frame this note is attached to (0-based), when journaled during a game
 }
 
-/**
- * The shared, persisted record produced by BOTH modes (bowl-off + journal).
- * History/analytics read this; mode-specific fields are optional.
- */
-export interface GameRecord {
+/** Fields every mode's history record shares. */
+export interface GameBase {
 	id: string;
 	date: string; // ISO timestamp
-	mode: 'bowloff' | 'journal';
 	alley: string;
-	// bowl-off only
+	ball?: string; // primary ball used (bowl-off: arsenal ball name; journal: free text)
+}
+
+export interface BowloffRecord extends GameBase {
+	mode: 'bowloff';
 	condition?: LaneCondition;
 	frames?: Frame[];
 	score?: number;
@@ -137,10 +137,26 @@ export interface GameRecord {
 	result?: 'win' | 'loss' | 'tie';
 	usedHandicap?: boolean;
 	partial?: boolean; // finished early (fewer than 10 frames) — kept in history, excluded from stats
-	ball?: string; // primary ball used (bowl-off) or free-text (journal)
-	ballChanges?: { frame: number; name: string; cover: string }[]; // bowl-off ball-downs
+	ballChanges?: { frame: number; name: string; cover: string }[]; // ball-downs
 	centre?: { name: string; pinsetter: string; approach: string; approachFeel: string; ballReturn: string }; // snapshot for stats/ML
-	// journal only
+	shots?: JournalShot[]; // per-frame post-it notes made during the game (unified session)
+}
+
+export interface JournalRecord extends GameBase {
+	mode: 'journal';
 	pattern?: string;
 	shots?: JournalShot[];
 }
+
+/**
+ * The shared, persisted history record — a union discriminated on `mode`, so every
+ * consumer switches exhaustively and the compiler flags them all when a mode is added
+ * (Trace lands as a `TraceRecord` variant here).
+ */
+export type GameRecord = BowloffRecord | JournalRecord;
+
+// `satisfies Record<mode, true>` makes this fail to compile if the union gains a mode
+// that isn't listed — the point of the union is that consumers can't silently lag.
+const ALL_MODES = { bowloff: true, journal: true } satisfies Record<GameRecord['mode'], true>;
+/** All valid record modes, derived from the union — used to validate imports. */
+export const GAME_MODES = Object.keys(ALL_MODES) as GameRecord['mode'][];

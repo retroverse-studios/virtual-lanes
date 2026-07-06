@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { history } from '$lib/history.svelte';
 	import StatsView from '$lib/StatsView.svelte';
+	import type { GameRecord } from '$lib/engine/types';
+
+	// Typed Record over the mode union: adding a mode (e.g. 'trace') won't compile
+	// until this card knows how to label it.
+	const MODE_LABEL: Record<GameRecord['mode'], string> = { bowloff: '🎳 Bowl-off', journal: '📖 Journal' };
 
 	let games = $derived(history.games);
 	let view = $state<'games' | 'stats'>('games');
@@ -38,7 +43,7 @@
 		{#each games as g (g.id)}
 			<div class="gcard">
 				<div class="top">
-					<span class="mode">{g.mode === 'bowloff' ? '🎳 Bowl-off' : '📖 Journal'}</span>
+					<span class="mode">{MODE_LABEL[g.mode]}</span>
 					<span class="date">{fmt(g.date)}</span>
 					<button class="del" aria-label="Delete game" onclick={() => history.remove(g.id)}>✕</button>
 				</div>
@@ -60,7 +65,7 @@
 					{#if g.opponents?.length}
 						<div class="vs">vs {g.opponents.map((o) => `${o.name.split(' ')[0]} ${o.score}`).join(' · ')}</div>
 					{/if}
-				{:else}
+				{:else if g.mode === 'journal'}
 					{@const rr = readRate(g)}
 					<div class="mid">
 						<span class="score">{g.shots?.length ?? 0}</span>

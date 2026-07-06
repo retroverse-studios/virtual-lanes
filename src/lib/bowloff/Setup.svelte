@@ -63,7 +63,7 @@
 				<span class="fl">Pattern type</span>
 				<div class="seg" role="group" aria-label="Pattern type">
 					{#each [['house', 'House'], ['sport', 'Sport']] as [v, l] (v)}
-						<button class:on={g.cond.patternType === v} aria-pressed={g.cond.patternType === v} onclick={() => (g.cond.patternType === v as typeof g.cond.patternType)}>{l}</button>
+						<button class:on={g.cond.patternType === v} aria-pressed={g.cond.patternType === v} onclick={() => (g.cond.patternType = v as typeof g.cond.patternType)}>{l}</button>
 					{/each}
 				</div>
 			</div>

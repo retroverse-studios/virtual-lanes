@@ -18,7 +18,9 @@ import { roster as rosterStore } from '$lib/roster.svelte';
 import { arsenal } from '$lib/arsenal.svelte';
 import { centres } from '$lib/centres.svelte';
 import { history, History } from '$lib/history.svelte';
-import type { Ball, Bowler, Frame, GameRecord, JournalShot, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
+import { readJSON, writeJSON } from '$lib/stores/local.svelte';
+import { browser } from '$app/environment';
+import type { Ball, Bowler, BowloffRecord, Frame, JournalShot, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
 
 const emptyNote = (): JournalShot => ({ saw: '', reaction: '', result: '', adjustments: [], read: '', emotion: '', note: '' });
 
@@ -59,6 +61,22 @@ export interface StandRow {
 }
 
 const SETUP_KEY = 'vl.bowloff.setup.v1';
+const LIVE_KEY = 'vl.bowloff.live.v1';
+
+/** Snapshot of an in-progress game, checkpointed so a refresh/tab-kill at the alley can't lose it. */
+interface LiveGame {
+	cond: LaneCondition;
+	lane: Lane | null; // never null in practice — checkpoints only happen mid-play
+	opponents: Opp[];
+	humanFrames: Frame[];
+	curStanding: number[];
+	leaves: Leave[];
+	pendingLeave: { frame: number; standing: number[] } | null;
+	revealed: number;
+	notes: Record<number, JournalShot>;
+	ballId: string;
+	ballChanges: { frame: number; id: string; name: string; cover: string }[];
+}
 
 class BowlOff {
 	screen = $state<Screen>('setup');
@@ -101,24 +119,61 @@ class BowlOff {
 
 	constructor() {
 		this.#loadSetup();
+		this.#resume();
 	}
 	#loadSetup() {
-		if (typeof localStorage === 'undefined') return;
-		try {
-			const s = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null');
-			if (!s) return;
-			if (s.cond) this.cond = { ...this.cond, ...s.cond };
-			if (s.human) this.human = { ...this.human, ...s.human };
-			if (Array.isArray(s.selectedIds)) this.selectedIds = s.selectedIds.filter((id: string) => this.roster.some((r) => r.id === id));
-			if (s.cfg) this.cfg = { ...this.cfg, ...s.cfg };
-		} catch {
-			/* ignore corrupt setup */
-		}
+		const s = readJSON<Partial<{ cond: LaneCondition; human: HumanProfile; selectedIds: string[]; cfg: Cfg }>>(SETUP_KEY);
+		if (!s) return;
+		if (s.cond) this.cond = { ...this.cond, ...s.cond };
+		if (s.human) this.human = { ...this.human, ...s.human };
+		if (Array.isArray(s.selectedIds)) this.selectedIds = s.selectedIds.filter((id: string) => this.roster.some((r) => r.id === id));
+		if (s.cfg) this.cfg = { ...this.cfg, ...s.cfg };
 	}
 	/** Persist the current setup (also called from Settings when the profile changes). */
 	saveSetup() {
-		if (typeof localStorage === 'undefined') return;
-		localStorage.setItem(SETUP_KEY, JSON.stringify({ cond: this.cond, human: this.human, selectedIds: this.selectedIds, cfg: this.cfg }));
+		writeJSON(SETUP_KEY, { cond: this.cond, human: this.human, selectedIds: this.selectedIds, cfg: this.cfg });
+	}
+
+	/* ---------- live-game checkpoint (durability across refresh / PWA eviction) ---------- */
+	#checkpoint() {
+		if (this.screen !== 'play') return;
+		writeJSON(LIVE_KEY, {
+			cond: this.cond,
+			lane: this.lane,
+			opponents: this.opponents,
+			humanFrames: this.humanFrames,
+			curStanding: this.curStanding,
+			leaves: this.leaves,
+			pendingLeave: this.#pendingLeave,
+			revealed: this.revealed,
+			notes: this.notes,
+			ballId: this.ballId,
+			ballChanges: this.ballChanges
+		} satisfies LiveGame);
+	}
+	#clearCheckpoint() {
+		if (!browser) return;
+		try {
+			localStorage.removeItem(LIVE_KEY);
+		} catch {
+			/* storage disabled — nothing to clear */
+		}
+	}
+	#resume() {
+		const s = readJSON<LiveGame>(LIVE_KEY);
+		if (!s || !s.lane || !Array.isArray(s.humanFrames) || !Array.isArray(s.opponents)) return;
+		this.cond = { ...this.cond, ...s.cond };
+		this.lane = s.lane;
+		this.opponents = s.opponents;
+		this.humanFrames = s.humanFrames.length ? s.humanFrames : [[]];
+		this.curStanding = Array.isArray(s.curStanding) ? s.curStanding : [...ALLPINS];
+		this.leaves = Array.isArray(s.leaves) ? s.leaves : [];
+		this.#pendingLeave = s.pendingLeave ?? null;
+		this.revealed = s.revealed ?? 0;
+		this.notes = s.notes ?? {};
+		this.ballId = s.ballId ?? '';
+		this.ballChanges = Array.isArray(s.ballChanges) ? s.ballChanges : [];
+		this.screen = 'play';
 	}
 
 	/* ---------- setup helpers ---------- */
@@ -172,14 +227,17 @@ class BowlOff {
 		this.ballChanges = firstBall ? [{ frame: 0, id: firstBall.id, name: firstBall.name, cover: firstBall.cover }] : [];
 		this.ballPickerOpen = false;
 		this.screen = 'play';
+		this.#checkpoint();
 	}
 	reset() {
+		this.#clearCheckpoint(); // covers Discard mid-game — a dropped game must not resume
 		this.screen = 'setup';
 	}
 	/** Finish early: save what's bowled so far (partial if before the 10th) and show the summary. */
 	finish() {
 		if (this.screen !== 'play') return;
 		this.#saveGame();
+		this.#clearCheckpoint();
 		this.screen = 'done';
 	}
 	get partial() {
@@ -240,7 +298,10 @@ class BowlOff {
 		if (this.gameOver) {
 			this.revealed = 10;
 			this.#saveGame();
+			this.#clearCheckpoint();
 			this.screen = 'done';
+		} else {
+			this.#checkpoint();
 		}
 	}
 
@@ -252,7 +313,7 @@ class BowlOff {
 		const partial = !this.gameOver;
 		const result: 'win' | 'loss' | 'tie' | undefined =
 			oppRows.length && !partial ? (me.total > bestOpp ? 'win' : me.total < bestOpp ? 'loss' : 'tie') : undefined;
-		const rec: GameRecord = {
+		const rec: BowloffRecord = {
 			id: History.newId(),
 			date: new Date().toISOString(),
 			mode: 'bowloff',
@@ -311,6 +372,7 @@ class BowlOff {
 		if (has) this.notes[this.noteFrame] = { ...d, adjustments: [...d.adjustments], frame: this.noteFrame };
 		else delete this.notes[this.noteFrame];
 		this.noteFrame = null;
+		this.#checkpoint();
 	}
 
 	/* ---------- your ball / ball changes ---------- */
@@ -327,6 +389,7 @@ class BowlOff {
 		const ex = this.ballChanges.findIndex((c) => c.frame === f);
 		if (ex >= 0) this.ballChanges[ex] = entry;
 		else this.ballChanges.push(entry);
+		this.#checkpoint();
 	}
 
 	/* ---------- views ---------- */

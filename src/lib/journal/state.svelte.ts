@@ -1,6 +1,6 @@
 // Journal mode: log real shots (saw → decided → happened). Saves to shared history.
 import { history, History } from '$lib/history.svelte';
-import type { GameRecord, JournalShot } from '$lib/engine/types';
+import type { JournalRecord, JournalShot } from '$lib/engine/types';
 
 export const ADJUSTMENTS = ['feet', 'target', 'speed', 'loft', 'hand', 'ball'];
 export const EMOJI: Record<string, string> = { good: '😊', ok: '😐', bad: '😤' };
@@ -55,7 +55,7 @@ class Journal {
 	}
 	finish() {
 		if (this.shots.length) {
-			const rec: GameRecord = {
+			const rec: JournalRecord = {
 				id: History.newId(),
 				date: new Date().toISOString(),
 				mode: 'journal',

@@ -1,5 +1,5 @@
 // Aggregate bowling stats computed from stored GameRecords (works retroactively).
-import type { GameRecord } from '$lib/engine/types';
+import type { BowloffRecord, GameRecord, JournalRecord } from '$lib/engine/types';
 
 export interface Group {
 	key: string;
@@ -42,7 +42,7 @@ const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
 
 export function computeStats(all: GameRecord[]): Stats {
 	const bg = all
-		.filter((g) => g.mode === 'bowloff' && g.frames && g.frames.length && !g.partial)
+		.filter((g): g is BowloffRecord => g.mode === 'bowloff' && !!g.frames?.length && !g.partial)
 		.slice()
 		.sort((a, b) => (a.date < b.date ? -1 : 1));
 	const scores = bg.map((g) => g.score ?? 0);
@@ -90,8 +90,8 @@ export function computeStats(all: GameRecord[]): Stats {
 		}
 	}
 
-	const group = (key: (g: GameRecord) => string): Group[] => {
-		const m = new Map<string, GameRecord[]>();
+	const group = (key: (g: BowloffRecord) => string): Group[] => {
+		const m = new Map<string, BowloffRecord[]>();
 		for (const g of bg) {
 			const k = key(g);
 			if (!m.has(k)) m.set(k, []);
@@ -108,15 +108,14 @@ export function computeStats(all: GameRecord[]): Stats {
 			.sort((a, b) => b.count - a.count);
 	};
 
-	const jg = all.filter((g) => g.mode === 'journal');
+	const jg = all.filter((g): g is JournalRecord => g.mode === 'journal');
 	let readMatched = 0,
 		readJudged = 0;
 	for (const g of [...jg, ...bg])
 		for (const s of g.shots ?? []) {
-			const sh = s as { read?: string };
-			if (sh.read) {
+			if (s.read) {
 				readJudged++;
-				if (sh.read === 'match') readMatched++;
+				if (s.read === 'match') readMatched++;
 			}
 		}
 

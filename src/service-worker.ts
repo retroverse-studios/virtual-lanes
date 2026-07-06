@@ -3,11 +3,14 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 
-import { build, files, version } from '$service-worker';
+import { build, files, prerendered, version } from '$service-worker';
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = `vl-cache-${version}`;
-const ASSETS = [...build, ...files, '/']; // app bundles + static files + the SPA entry
+// The adapter-static fallback page: a neutral SPA shell safe to serve at ANY offline URL
+// (the prerendered '/' embeds home-route hydration data, so it's wrong for deep links).
+const FALLBACK = '/200.html';
+const ASSETS = [...build, ...files, ...prerendered, FALLBACK]; // bundles + static + prerendered pages + shell
 // O(1) membership test in the hot fetch path (ASSETS changes every build, so a Set is right).
 const KNOWN = new Set(ASSETS);
 
@@ -48,14 +51,16 @@ sw.addEventListener('fetch', (event) => {
 			}
 			try {
 				const res = await fetch(req);
-				if (res.ok && res.type === 'basic') cache.put(req, res.clone());
+				// Only cache complete responses: a 206 (Range request, e.g. video seek) stored
+				// here would later be served for full requests and permanently break playback.
+				if (res.status === 200 && res.type === 'basic' && !req.headers.has('range')) cache.put(req, res.clone());
 				return res;
 			} catch {
 				const cached = await cache.match(req);
 				if (cached) return cached;
-				// offline navigation → serve the cached SPA entry
+				// offline navigation → serve the neutral SPA shell
 				if (req.mode === 'navigate') {
-					const entry = (await cache.match('/')) ?? (await cache.match('/index.html'));
+					const entry = (await cache.match(FALLBACK)) ?? (await cache.match('/'));
 					if (entry) return entry;
 				}
 				throw new Error('offline and not cached');

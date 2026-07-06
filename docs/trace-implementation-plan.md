@@ -7,10 +7,11 @@
 
 ## Phase 0 — Foundations (audit fixes that block/de-risk Trace)
 
-- [ ] Commit the WIP baseline (localStore refactor, vitest setup, new route files)
-- [ ] Fix sport-pattern toggle no-op (`Setup.svelte` `===` vs `=`) — High
-- [ ] Checkpoint in-progress bowl-off to localStorage + rehydrate on load — High
-- [ ] Service worker: cache only status 200, skip Range requests (video cache poisoning) — Medium
+- [x] Commit the WIP baseline (localStore refactor, vitest setup, new route files)
+- [x] Fix sport-pattern toggle no-op (`Setup.svelte` `===` vs `=`) — High
+- [x] Checkpoint in-progress bowl-off to localStorage + rehydrate on load — High
+- [x] Service worker: cache only status 200, skip Range requests (video cache poisoning) — Medium
+      (also folded in: precache `prerendered` pages, offline-navigate fallback → `200.html`)
 - [ ] Refactor `GameRecord` into a discriminated union (`bowloff | journal | trace`-ready)
       with exhaustive handling in `history`, `stats.ts`, history page
 
