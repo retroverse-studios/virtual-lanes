@@ -82,7 +82,7 @@ export function laneHomography(corners: readonly Pt[]): number[] {
 
 /**
  * Sanity check for a computed lane homography: the image-corner quad must map into
- * lane space without flipping or blowing up (catches collinear / mis-ordered taps).
+ * lane space without flipping or blowing up (catches collinear / degenerate taps).
  */
 export function isPlausibleLaneHomography(H: readonly number[], corners: readonly Pt[]): boolean {
 	return corners.every((c, i) => {
@@ -90,4 +90,15 @@ export function isPlausibleLaneHomography(H: readonly number[], corners: readonl
 		const [eu, ev] = LANE_CORNERS[i];
 		return Number.isFinite(u) && Number.isFinite(v) && Math.abs(u - eu) < 0.01 && Math.abs(v - ev) < 0.01;
 	});
+}
+
+/**
+ * Checks the tapped corners look like a lane filmed from behind the foul line:
+ * foul corners below the pin corners in the image, left corners left of right ones.
+ * (The DLT itself can't catch mis-ORDERED taps — it happily maps any 4 points.)
+ */
+export function isValidCornerOrder(corners: readonly Pt[]): boolean {
+	if (corners.length !== 4) return false;
+	const [fl, fr, pl, pr] = corners;
+	return fl[0] < fr[0] && pl[0] < pr[0] && fl[1] > pl[1] && fr[1] > pr[1];
 }

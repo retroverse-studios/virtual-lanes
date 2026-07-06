@@ -27,9 +27,10 @@
 
 ## Phase 2 — Calibration
 
-- [ ] Tap-4-corners UI (foul-L/R, pin-L/R) with overlay, reset, compute
-- [ ] Corner-tap accuracy aid (magnifier loupe or pinch-zoom)
-- [ ] Remember last calibration as the starting guess for the next clip
+- [x] Tap-4-corners UI (foul-L/R, pin-L/R) with overlay, reset, compute
+      (+ drag-to-adjust placed corners; corner-order + collinearity validation with friendly errors)
+- [x] Corner-tap accuracy aid (magnifier loupe while dragging)
+- [x] Remember last calibration as the starting guess for the next clip (same video dims)
 
 ## Phase 3 — Ball scan
 
