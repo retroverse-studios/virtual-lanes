@@ -1,0 +1,66 @@
+# Trace (ball tracking) — implementation plan
+
+> Working plan agreed 2026-07-06, derived from the PWA audit + `docs/product-direction.md`
+> (Mode 3) + the validated `prototype/trace.html`. Check items off as they land.
+> Decision baked in: **never persist video** — only calibration, a downsampled track
+> (≤200 points), and derived metrics (localStorage-sized; IndexedDB deferred).
+
+## Phase 0 — Foundations (audit fixes that block/de-risk Trace)
+
+- [ ] Commit the WIP baseline (localStore refactor, vitest setup, new route files)
+- [ ] Fix sport-pattern toggle no-op (`Setup.svelte` `===` vs `=`) — High
+- [ ] Checkpoint in-progress bowl-off to localStorage + rehydrate on load — High
+- [ ] Service worker: cache only status 200, skip Range requests (video cache poisoning) — Medium
+- [ ] Refactor `GameRecord` into a discriminated union (`bowloff | journal | trace`-ready)
+      with exhaustive handling in `history`, `stats.ts`, history page
+
+## Phase 1 — Plumbing: clip import + scrubbing
+
+- [ ] `src/lib/trace/` module: `state.svelte.ts` session state machine
+      (load → calibrate → scan → results → save)
+- [ ] Pure CV modules with Vitest coverage (same style as `bowling.test.ts`):
+      `cv/homography.ts` (solveH/applyH), `cv/blob.ts` (gray/diff/largest-blob),
+      `cv/metrics.ts` (laydown/breakpoint/entry/speed from a track)
+- [ ] `/trace` route: replace coming-soon with ClipLoader (file input → `<video>` + scrub canvas)
+
+## Phase 2 — Calibration
+
+- [ ] Tap-4-corners UI (foul-L/R, pin-L/R) with overlay, reset, compute
+- [ ] Corner-tap accuracy aid (magnifier loupe or pinch-zoom)
+- [ ] Remember last calibration as the starting guess for the next clip
+
+## Phase 3 — Ball scan
+
+- [ ] Frame-diff scan ported from prototype, plus the fixes it punted on:
+  - [ ] restrict diff mask to the calibrated lane quad (ignore the bowler/arm)
+  - [ ] real monotonic-progress filter (prototype only sorts by time)
+  - [ ] drop pre-release frames; interpolate blur gaps
+- [ ] Pixel processing in a Web Worker (transfer ImageData); seek loop stays on main thread
+- [ ] (Later option) WebCodecs VideoDecoder fast path with seek-loop fallback
+
+## Phase 4 — Metrics + results
+
+- [ ] laydown / breakpoint (board + ft) / entry board + **entry angle** / pocket / speed
+- [ ] Use profile `handedness` to flip breakpoint logic
+- [ ] Top-down SVG path render (reuse the lane art from the coming-soon page)
+- [ ] Revs shown as "not measured" (honest-estimate policy)
+
+## Phase 5 — Save to shared history
+
+- [ ] `TraceRecord` variant (per the sketch in product-direction.md) saved via `history`
+- [ ] History card with mini top-down path
+- [ ] Optional link to a game/frame (sit beside the journaled shot)
+- [ ] Include trace records (and arsenal/rivals/centres/profile) in export/import
+
+## Deferred
+
+Auto corner detection (Canny/Hough) · live mode (Capacitor for 120/240 fps) ·
+rev estimation · OpenCV.js only if the classical pipeline proves fragile.
+
+## Audit backlog (not Trace-blocking; schedule separately)
+
+SW: 200.html offline fallback, precache `prerendered`, stranded-session update flow ·
+persistence: corrupt-payload backup, multi-tab `storage` events, payload versioning,
+import validation, full export · Done-screen `writeFailed` warning · `bowl()` unit tests ·
+dialog a11y (post-it, ball picker) · manifest `id` · `svelte.config.js` ·
+`mobile-web-app-capable` meta · in-app destructive confirms.
