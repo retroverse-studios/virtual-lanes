@@ -110,6 +110,9 @@ interface TraceResult {
 
 ## Mode 4 — Form (camera body / pose tracking)
 
+> Staged implementation plan (post-Trace, with occlusion policy + clip-quality coaching):
+> **`form-implementation-plan.md`**.
+
 The sibling of Trace: Trace measures the **ball**, Form measures the **body**. Same flow (import a
 clip, process in-browser, save to the shared history), same philosophy (**relative to your own
 baseline** beats absolute numbers; *consistency* is the signal).
