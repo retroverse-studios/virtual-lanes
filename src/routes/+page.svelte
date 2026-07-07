@@ -16,7 +16,7 @@
 	</a>
 
 	<a class="tile trace" href="/trace">
-		<div class="t">Trace <span class="badge">soon</span></div>
+		<div class="t">Trace <span class="badge">beta</span></div>
 		<div class="d">Film a shot — auto-track the ball to show laydown, breakpoint, pocket and a top-down path.</div>
 	</a>
 
