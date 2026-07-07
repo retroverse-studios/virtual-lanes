@@ -6,7 +6,7 @@
 
 ## Build status (2026-06)
 
-The SvelteKit + adapter-static PWA is **live on Cloudflare Pages** (`virtual-lanes.pages.dev`;
+The SvelteKit + adapter-static PWA is **live on Cloudflare Pages** (`virtuallanes.app` (Pages project `virtuallanes`);
 git-connected to this repo 2026-07 — builds on push to `main`. Earlier deploys were manual uploads.) **Done:** Bowl-off (layout B, positional pin deck, leave/spare/
 split stats; **rivals optional → solo game tracking**), History (shared `GameRecord`, localStorage),
 **Journal v1**, **Rivals manager** (create/edit/delete custom + hide/unhide built-ins),

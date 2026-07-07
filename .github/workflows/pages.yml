@@ -1,6 +1,6 @@
 name: Deploy landing page to GitHub Pages
 
-# The app itself deploys to Cloudflare Pages (virtual-lanes.pages.dev);
+# The app itself deploys to Cloudflare Pages (virtuallanes.app);
 # this publishes the static landing/ folder to GitHub Pages, with the
 # MkDocs build from the gh-pages branch kept available under /docs/.
 # NB: pushing new docs to gh-pages does NOT retrigger this workflow —
