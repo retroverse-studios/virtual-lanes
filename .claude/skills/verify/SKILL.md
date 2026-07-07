@@ -12,17 +12,18 @@ Phone-first SvelteKit + adapter-static PWA. No project test server — build and
 ```bash
 pnpm build                                   # → ./build
 pnpm preview --port 4199 --strictPort        # app flows (SPA fallback works)
-pnpm dlx sirv-cli build --single 200.html --port 4200   # SW/offline tests (see gotcha)
+pnpm dlx sirv-cli build --single 404.html --port 4200   # SW/offline tests (see gotcha)
 ```
 
 **Gotchas**
 - Ports 4173/4174 are often taken by OTHER apps on this machine (vite silently
   hops ports unless `--strictPort`; one squatter is a karaoke app). Always
   `--strictPort` and curl the `<title>` before trusting a port.
-- `vite preview` **404s `/200.html`** (SvelteKit preview doesn't expose the
-  adapter fallback file), so SW precache of the offline shell silently fails
-  there. Use the sirv command above — it matches Cloudflare Pages semantics
-  (static files + 200.html fallback). Live check: `virtual-lanes.pages.dev/200.html` → 200.
+- `vite preview` **404s the adapter fallback file** (`/404.html`), so SW precache
+  of the offline shell silently fails there. Use the sirv command above — it
+  matches Cloudflare Pages semantics (static files + SPA fallback). No `_redirects`
+  file: on the new CF Pages runtime a `/* /x.html 200` rule shadows real assets
+  and pretty-URL-redirects; CF serves `404.html` natively for unmatched routes.
 - Rebuilding while `vite preview` is running kills the preview process.
 - A preview that outlives a rebuild serves STALE chunk manifests (page HTML 200s but
   hashed `_app/immutable/*` chunks 404 → hydration silently fails). Kill it with

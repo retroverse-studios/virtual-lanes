@@ -11,9 +11,10 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 			// Offline-first SPA: prerender the static pages, fall back to a client-side shell for the
-			// rest. '200.html' is the Cloudflare Pages SPA convention (and avoids colliding with a
-			// prerendered home page at index.html); both CF Pages and Netlify serve it via _redirects.
-			adapter: adapter({ fallback: '200.html' })
+			// rest. '404.html' is what Cloudflare Pages (and GitHub Pages) serve natively for
+			// unmatched routes — no _redirects needed. On the new Pages runtime a
+			// `/* /200.html 200` redirect rule shadows real assets and pretty-URL-redirects to /200.
+			adapter: adapter({ fallback: '404.html' })
 		})
 	]
 });

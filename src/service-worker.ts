@@ -9,7 +9,8 @@ const sw = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = `vl-cache-${version}`;
 // The adapter-static fallback page: a neutral SPA shell safe to serve at ANY offline URL
 // (the prerendered '/' embeds home-route hydration data, so it's wrong for deep links).
-const FALLBACK = '/200.html';
+// Named 404.html because that's what Cloudflare Pages serves natively for unmatched routes.
+const FALLBACK = '/404.html';
 const ASSETS = [...build, ...files, ...prerendered, FALLBACK]; // bundles + static + prerendered pages + shell
 // O(1) membership test in the hot fetch path (ASSETS changes every build, so a Set is right).
 const KNOWN = new Set(ASSETS);
