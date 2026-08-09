@@ -142,6 +142,19 @@ button {
 	font-size: 13px;
 	margin-top: 4px;
 }
+.launch .studio {
+	text-align: center;
+	color: var(--dim);
+	font-size: 11px;
+	margin-top: 14px;
+}
+.launch .studio a {
+	color: inherit;
+	text-decoration: underline;
+}
+.launch .studio a:hover {
+	color: var(--gold);
+}
 
 /* bottom tab bar */
 .tabbar {

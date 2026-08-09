@@ -26,4 +26,8 @@
 	</a>
 
 	<p class="minor">One game, one history. Switch anytime from the tabs.</p>
+
+	<p class="studio">
+		A <a href="https://retroverse.studio" target="_blank" rel="noopener">Retroverse Studios</a> project
+	</p>
 </div>
