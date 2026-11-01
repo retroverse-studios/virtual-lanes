@@ -73,6 +73,7 @@
 	<div class="deckbtns">
 		<button class="dbtn" onclick={() => (g.deckKnocked = [...standing])}>{g.curFrame.length === 0 ? 'Strike (all)' : 'Spare (all)'}</button>
 		<button class="dbtn" onclick={() => (g.deckKnocked = [])}>Clear</button>
+		<button class="dbtn" disabled={!g.canUndo} onclick={() => g.undoLastBall()}>↩ Undo ball</button>
 	</div>
 	<button class="bowl" onclick={() => g.bowl([...knocked])}>Bowl — {knocked.length} down{allDown ? ' ✓' : ''}</button>
 

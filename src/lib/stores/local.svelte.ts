@@ -66,7 +66,12 @@ export abstract class StockedStore<T extends { id: string }> {
 	protected hydrate(raw: unknown): StockedState<T> | null {
 		const s = raw as Partial<StockedState<T>> | null;
 		if (!s) return null;
-		return { custom: Array.isArray(s.custom) ? s.custom : [], hidden: Array.isArray(s.hidden) ? s.hidden : [] };
+		// Drop records without a usable id — available/byId would trip over them
+		const custom = Array.isArray(s.custom)
+			? s.custom.filter((r) => !!r && typeof (r as { id?: unknown }).id === 'string')
+			: [];
+		const hidden = Array.isArray(s.hidden) ? s.hidden.filter((h) => typeof h === 'string') : [];
+		return { custom, hidden };
 	}
 
 	protected load(): void {
@@ -98,7 +103,8 @@ export abstract class StockedStore<T extends { id: string }> {
 	}
 	update(id: string, record: T): void {
 		const i = this.custom.findIndex((r) => r.id === id);
-		if (i >= 0) this.custom[i] = record;
+		if (i < 0) return; // no-op: don't write (or flag writeFailed) for nothing
+		this.custom[i] = record;
 		this.persist();
 	}
 	remove(id: string): void {

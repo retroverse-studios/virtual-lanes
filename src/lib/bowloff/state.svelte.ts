@@ -64,6 +64,15 @@ const SETUP_KEY = 'vl.bowloff.setup.v1';
 const LIVE_KEY = 'vl.bowloff.live.v1';
 
 /** Snapshot of an in-progress game, checkpointed so a refresh/tab-kill at the alley can't lose it. */
+/** Pre-ball snapshot for undo: everything bowl() mutates, checkpointed with the game. */
+interface UndoSnapshot {
+	humanFrames: Frame[];
+	curStanding: number[];
+	leaves: Leave[];
+	pendingLeave: { frame: number; standing: number[] } | null;
+	revealed: number;
+}
+
 interface LiveGame {
 	cond: LaneCondition;
 	lane: Lane | null; // never null in practice — checkpoints only happen mid-play
@@ -76,6 +85,7 @@ interface LiveGame {
 	notes: Record<number, JournalShot>;
 	ballId: string;
 	ballChanges: { frame: number; id: string; name: string; cover: string }[];
+	undoStack?: UndoSnapshot[];
 }
 
 class BowlOff {
@@ -101,6 +111,10 @@ class BowlOff {
 	revealed = $state(0);
 	deckKnocked = $state<number[]>([]);
 	#pendingLeave: { frame: number; standing: number[] } | null = null;
+	undoStack = $state<UndoSnapshot[]>([]);
+	get canUndo() {
+		return this.screen === 'play' && this.undoStack.length > 0;
+	}
 
 	// per-frame journal notes (post-it) attached to the live game
 	notes = $state<Record<number, JournalShot>>({});
@@ -163,7 +177,8 @@ class BowlOff {
 			revealed: this.revealed,
 			notes: this.notes,
 			ballId: this.ballId,
-			ballChanges: this.ballChanges
+			ballChanges: this.ballChanges,
+			undoStack: this.undoStack
 		} satisfies LiveGame);
 	}
 	#clearCheckpoint() {
@@ -188,6 +203,7 @@ class BowlOff {
 		this.notes = s.notes ?? {};
 		this.ballId = s.ballId ?? '';
 		this.ballChanges = Array.isArray(s.ballChanges) ? s.ballChanges : [];
+		this.undoStack = Array.isArray(s.undoStack) ? s.undoStack : [];
 		this.screen = 'play';
 	}
 
@@ -240,6 +256,7 @@ class BowlOff {
 		const firstBall = arsenal.available[0];
 		this.ballId = firstBall?.id ?? '';
 		this.ballChanges = firstBall ? [{ frame: 0, id: firstBall.id, name: firstBall.name, cover: firstBall.cover }] : [];
+		this.undoStack = [];
 		this.ballPickerOpen = false;
 		this.screen = 'play';
 		this.#checkpoint();
@@ -287,8 +304,35 @@ class BowlOff {
 	}
 
 	/** Record a ball as the set of pins knocked down (positional). */
+	#snapshotForUndo() {
+		this.undoStack.push({
+			humanFrames: this.humanFrames.map((f) => [...f]),
+			curStanding: [...this.curStanding],
+			leaves: this.leaves.map((l) => ({ ...l, standing: [...l.standing] })),
+			pendingLeave: this.#pendingLeave ? { frame: this.#pendingLeave.frame, standing: [...this.#pendingLeave.standing] } : null,
+			revealed: this.revealed
+		});
+		if (this.undoStack.length > 25) this.undoStack.shift();
+	}
+
+	/** Take back the last ball bowled (mis-tap at the alley). Play screen only —
+	 *  once the game is finished and saved, history is the record. */
+	undoLastBall() {
+		if (this.screen !== 'play') return;
+		const s = this.undoStack.pop();
+		if (!s) return;
+		this.humanFrames = s.humanFrames;
+		this.curStanding = s.curStanding;
+		this.leaves = s.leaves;
+		this.#pendingLeave = s.pendingLeave;
+		this.revealed = s.revealed;
+		this.deckKnocked = [];
+		this.#checkpoint();
+	}
+
 	bowl(knockedSet: number[]) {
 		if (this.screen !== 'play' || this.gameOver) return;
+		this.#snapshotForUndo();
 		const i = this.curIdx;
 		const before = this.curStanding;
 		const ballNo = this.humanFrames[i].length;
@@ -306,6 +350,11 @@ class BowlOff {
 		} else if (this.#pendingLeave) {
 			this.leaves.push({ frame: this.#pendingLeave.frame, standing: this.#pendingLeave.standing, converted: after.length === 0, split: isSplit(this.#pendingLeave.standing) });
 			this.#pendingLeave = null;
+		}
+		// Tenth frame after a strike: a partial ball 2 leaves a spare attempt
+		// for ball 3 — record it like any other leave (was missing from stats)
+		if (i === 9 && ballNo === 1 && this.humanFrames[9][0] === 10 && pins < 10 && pins > 0) {
+			this.#pendingLeave = { frame: 9, standing: after };
 		}
 		this.curStanding = this.gameOver ? [] : advanced ? [...ALLPINS] : after.length === 0 ? [...ALLPINS] : after;
 		if (done) this.revealed = Math.min(10, this.#completedFrames());

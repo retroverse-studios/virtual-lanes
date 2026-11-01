@@ -4,13 +4,13 @@
 	import { page } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { g } from '$lib/bowloff/state.svelte';
-	import { j } from '$lib/journal/state.svelte';
 
 	let { children } = $props();
 
-	// Apply app updates the moment a new service worker takes over — but never mid-session:
-	// a live bowl-off (in-memory until Finish) or an active journal would lose unsaved progress.
+	// Apply app updates the moment a new service worker takes over. Safe even
+	// mid-session: live Bowl-off games and Journal sessions are checkpointed
+	// to localStorage and resume after the reload (only un-tapped deck pins
+	// and in-flight Trace video analysis are transient).
 	onMount(() => {
 		if (!('serviceWorker' in navigator)) return;
 		// Skip the very first activation (no prior controller) so a brand-new install doesn't
@@ -19,7 +19,6 @@
 		let refreshing = false;
 		navigator.serviceWorker.addEventListener('controllerchange', () => {
 			if (refreshing || !hadController) return;
-			if (g.screen === 'play' || j.active) return; // defer until a safe moment
 			refreshing = true;
 			location.reload();
 		});

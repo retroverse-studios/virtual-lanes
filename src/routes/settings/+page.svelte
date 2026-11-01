@@ -16,6 +16,15 @@
 	const styleOpts = Object.entries(STYLE_PRESETS).map(([k, v]) => ({ k, label: v.label }));
 	let importMsg = $state('');
 
+
+	function factoryReset() {
+		try {
+			// Every app key is vl.-prefixed; a reload then re-seeds defaults
+			for (const k of Object.keys(localStorage)) if (k.startsWith('vl.')) localStorage.removeItem(k);
+		} catch { /* storage unavailable: reload anyway */ }
+		location.reload();
+	}
+
 	function exportData() {
 		// v2: the FULL device state — games plus custom arsenal/rivals/centres and the
 		// profile — so a backup really can move everything to another phone.
@@ -59,7 +68,7 @@
 				if (parsed.centres && centres.restore(parsed.centres)) extras.push('centres');
 				if (parsed.setup && g.restoreSetup(parsed.setup)) extras.push('profile');
 			}
-			importMsg = `Imported ${added} new game${added === 1 ? '' : 's'}${games.length - added > 0 ? ` (${games.length - added} already present)` : ''}${extras.length ? ` + ${extras.join(', ')}` : ''}.`;
+			importMsg = `Imported ${added} new game${added === 1 ? '' : 's'}${games.length - added > 0 ? ` (${games.length - added} skipped — duplicates or invalid)` : ''}${extras.length ? ` + ${extras.join(', ')}` : ''}.`;
 		} catch {
 			importMsg = 'Import failed — not a valid VirtualLanes export file.';
 		}
@@ -130,7 +139,7 @@
 		</label>
 	</div>
 	{#if importMsg}<div class="msg">{importMsg}</div>{/if}
-	<button class="cta danger" onclick={() => confirm('Delete ALL saved games on this device? This cannot be undone.') && history.clear()} disabled={!history.games.length}>Clear all data</button>
+	<button class="cta danger" onclick={() => confirm('Factory reset? This deletes EVERYTHING on this device: saved games, your profile and setup, custom arsenal/rivals/centres, any live game or journal in progress, and saved Trace calibration. This cannot be undone.') && factoryReset()}>Factory reset — erase everything</button>
 
 	<div class="sec">Equipment, rivals &amp; centres</div>
 	<div class="btns">

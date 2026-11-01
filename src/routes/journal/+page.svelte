@@ -29,10 +29,10 @@
 	<div class="page">
 		<h1>📖 Journal</h1>
 		<p class="lede">No active game — journal standalone, or start a Bowl-off to journal frame-by-frame.</p>
-		<div class="field"><label for="al">Alley</label><input id="al" bind:value={j.alley} /></div>
+		<div class="field"><label for="al">Alley</label><input id="al" bind:value={j.alley} oninput={() => j.checkpoint()} /></div>
 		<div class="row2">
-			<div class="field"><label for="pat">Pattern</label><input id="pat" bind:value={j.pattern} placeholder="e.g. House, 41ft sport" /></div>
-			<div class="field"><label for="bl">Ball</label><input id="bl" bind:value={j.ball} placeholder="optional" /></div>
+			<div class="field"><label for="pat">Pattern</label><input id="pat" bind:value={j.pattern} oninput={() => j.checkpoint()} placeholder="e.g. House, 41ft sport" /></div>
+			<div class="field"><label for="bl">Ball</label><input id="bl" bind:value={j.ball} oninput={() => j.checkpoint()} placeholder="optional" /></div>
 		</div>
 		<button class="cta" onclick={() => j.start()}>Start journaling →</button>
 	</div>
@@ -67,7 +67,7 @@
 
 		<div class="form">
 			<div class="ftitle">{j.editing === null ? `New shot #${j.shots.length + 1}` : `Editing shot #${j.editing + 1}`}</div>
-			<div class="field"><label for="saw">What you saw</label><input id="saw" bind:value={j.draft.saw} placeholder="e.g. light hit, ball never recovered" /></div>
+			<div class="field"><label for="saw">What you saw</label><input id="saw" bind:value={j.draft.saw} oninput={() => j.checkpoint()} placeholder="e.g. light hit, ball never recovered" /></div>
 			<div class="field">
 				<span class="fl">Reaction / hook timing</span>
 				<div class="seg" role="group" aria-label="Reaction / hook timing">
@@ -76,7 +76,7 @@
 					{/each}
 				</div>
 			</div>
-			<div class="field"><label for="res">What happened</label><input id="res" bind:value={j.draft.result} placeholder="e.g. strike, 10-pin, 3-6-10 split" /></div>
+			<div class="field"><label for="res">What happened</label><input id="res" bind:value={j.draft.result} oninput={() => j.checkpoint()} placeholder="e.g. strike, 10-pin, 3-6-10 split" /></div>
 			<div class="field">
 				<span class="fl">Adjusted</span>
 				<div class="chips" role="group" aria-label="Adjusted">
@@ -103,7 +103,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="field"><label for="note">Note</label><input id="note" bind:value={j.draft.note} placeholder="optional" /></div>
+			<div class="field"><label for="note">Note</label><input id="note" bind:value={j.draft.note} oninput={() => j.checkpoint()} placeholder="optional" /></div>
 			<div class="frow">
 				{#if j.editing !== null}<button class="ghost" onclick={() => j.cancelEdit()}>Cancel</button>{/if}
 				<button class="cta" disabled={!j.canSaveShot} onclick={() => j.saveShot()}>{j.editing === null ? 'Log shot' : 'Update shot'}</button>

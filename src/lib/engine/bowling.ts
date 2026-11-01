@@ -66,6 +66,9 @@ export function breakdownRate(
 	cfg: { breakdown: boolean; laneMode: 'ignore' | 'bySelection' | 'manual'; manualCount: number }
 ): number {
 	if (!cfg.breakdown || cfg.laneMode === 'ignore') return 0;
+	// Nobody described on the lane: averages below would be 0/0 = NaN, and a
+	// NaN rate would silently poison every friction calculation downstream
+	if (onLane.length === 0) return 0;
 	const occ = cfg.laneMode === 'manual' ? cfg.manualCount : onLane.length;
 	const avgAgg = onLane.reduce((s, b) => s + (0.1 + 0.95 * clamp((b.attr.rev - 150) / 400, 0, 1)), 0) / onLane.length;
 	const avgCov = onLane.reduce((s, b) => s + COVER_OILMOVE[b.ball.cover], 0) / onLane.length;
@@ -106,7 +109,9 @@ function simReg(p: Effective): Frame {
 	// a messy leave (split / washout) converts far less often; more likely with high variance.
 	const messy = rnd() < 0.12 * p.variance;
 	const so = messy ? p.spare * 0.25 : p.spare;
-	return [first, Math.min(rnd() < so ? rem : irange(rem + 1), rem)];
+	// A missed conversion knocks down 0..rem-1 — never all of them (matches the
+	// canonical Python reference; irange(rem + 1) converted "misses" as spares)
+	return [first, rnd() < so ? rem : irange(rem)];
 }
 function simTen(p: Effective): Frame {
 	const r: number[] = [];
@@ -268,7 +273,9 @@ export type HandicapCfg =
 	| { mode: 'perBowler' }
 	| { mode: 'percent'; pct: number; basis: number };
 export function handicap(b: { handicap?: number; avg?: number }, cfg: HandicapCfg): number {
-	if (cfg.mode === 'perBowler') return Math.max(0, b.handicap ?? 0);
-	if (cfg.mode === 'percent') return Math.max(0, Math.round((cfg.pct / 100) * (cfg.basis - (b.avg ?? 150))));
+	// Number inputs can yield NaN (cleared field) — never let it reach totals
+	const finite = (n: number | undefined, fallback: number) => (typeof n === 'number' && Number.isFinite(n) ? n : fallback);
+	if (cfg.mode === 'perBowler') return Math.max(0, finite(b.handicap, 0));
+	if (cfg.mode === 'percent') return Math.max(0, Math.round((finite(cfg.pct, 0) / 100) * (finite(cfg.basis, 220) - finite(b.avg, 150))));
 	return 0;
 }

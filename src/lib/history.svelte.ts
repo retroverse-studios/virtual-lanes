@@ -26,7 +26,9 @@ export class History {
 		if (this.#loaded || !browser) return;
 		this.#loaded = true;
 		const parsed = readJSON<GameRecord[]>(KEY);
-		this.games = Array.isArray(parsed) ? parsed : [];
+		// Stored data is as untrusted as an import (older schema, hand-edited):
+		// drop records that would break renderers expecting id/date/mode
+		this.games = Array.isArray(parsed) ? parsed.filter(isValidRecord) : [];
 	}
 
 	#persist() {

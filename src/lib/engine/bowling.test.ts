@@ -1,4 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+/** Deterministic PRNG so the Monte Carlo tests below can't flake (AUDIT M1). */
+function mulberry32(seed: number) {
+	return () => {
+		seed |= 0;
+		seed = (seed + 0x6d2b79f5) | 0;
+		let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+		x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+		return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+	};
+}
+beforeEach(() => {
+	vi.spyOn(Math, 'random').mockImplementation(mulberry32(20261101));
+});
+afterEach(() => {
+	vi.restoreAllMocks();
+});
 import {
 	ALLPINS,
 	BALL_BIAS,
@@ -387,3 +404,51 @@ function averageOverRuns(fn: () => number, n: number): number {
 	for (let i = 0; i < n; i++) s += fn();
 	return s / n;
 }
+
+/* ----------------------------- audit regressions (2026-11) ----------------------------- */
+
+describe('audit regressions', () => {
+	it('breakdownRate is 0 (not NaN) when nobody is described on the lane', () => {
+		const rate = breakdownRate([], { breakdown: true, laneMode: 'manual', manualCount: 6 });
+		expect(rate).toBe(0);
+	});
+
+	it('handicap never returns NaN for cleared number inputs', () => {
+		expect(handicap({ avg: NaN }, { mode: 'percent', pct: 90, basis: 220 })).toBe(63);
+		expect(handicap({ handicap: NaN }, { mode: 'perBowler' })).toBe(0);
+	});
+
+	it('single-pin spare conversion tracks the spare probability (misses never convert)', () => {
+		// With the old irange(rem + 1) a missed single-pin spare still converted
+		// ~50% of the time, pushing the observed rate far above expectation.
+		const house: Lane = { initialFriction: 0.46, rate: 0, sport: false, allowBallChange: false };
+		const ball: Ball = { name: 'x', cover: 'solid', core: 'symmetric' };
+		// Low accuracy on purpose: with a ~0.95 spare bowler the bug's extra
+		// (1-p)/2 conversion is too small to distinguish from legit conversions
+		const bowler: Bowler = {
+			id: 't',
+			name: 't',
+			styleKey: 'custom',
+			tier: 'rookie',
+			division: 'open',
+			handicap: 0,
+			attr: { rev: 250, speed: 16, acc: 0.2, cons: 0.8 }
+		};
+		const p = derive(bowler.attr, TIERS[bowler.tier].mult);
+		const e = eff(p, 0.46, false, BALL_BIAS[ball.cover]);
+		// messy leaves convert at spare*0.25 with probability 0.12*variance
+		const expected = e.spare * (1 - 0.09 * e.variance);
+		let attempts = 0;
+		let converted = 0;
+		for (let g = 0; g < 6000 && attempts < 4000; g++) {
+			for (const f of simBowlerGame(bowler, house, ball).frames.slice(0, 9)) {
+				if (f[0] === 9 && f.length === 2) {
+					attempts++;
+					if (f[1] === 1) converted++;
+				}
+			}
+		}
+		expect(attempts).toBeGreaterThan(1000);
+		expect(Math.abs(converted / attempts - expected)).toBeLessThan(0.05);
+	});
+});
