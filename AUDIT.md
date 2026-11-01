@@ -190,3 +190,28 @@ Verification: `pnpm check` 0/0 · `pnpm test` 142/142 (6 new) ·
 `pnpm build` clean · `pnpm audit --prod` no known vulnerabilities.
 Not exercised: real-device PWA install/update flow and Trace video
 analysis on phone footage.
+
+---
+
+## Known issue (reported 2026-11-01, deferred — owner to investigate)
+
+**Trace appears mirrored for a right-handed bowler** (reads like a
+left-handed trace). Static review of the coordinate chain found it
+internally consistent *for a rear-camera clip filmed from behind the
+approach*: lane x is boards-from-right (`cv/homography.ts`), foul-L maps
+to x=39, RH breakpoint = min x, RH pocket 17.5, and `TopDown.svelte`
+renders small x on the right (bowler's POV). So the reversal most likely
+enters before the math:
+
+1. **Front-camera (selfie) clips are mirrored at the source** — image-left
+   is then the lane's right, so correct taps still produce a mirrored lane.
+2. **Corner labels are ambiguous**: "foul line — LEFT corner"
+   (`state.svelte.ts: CORNER_LABELS`) invites screen-left vs lane-left
+   confusion; 7-pin/10-pin side labels would be unambiguous.
+3. **Saved calibration reuse**: a calibration from a rear-camera clip
+   applied to a mirrored clip (or vice versa) flips everything.
+
+Suggested future fixes: a "mirror clip" toggle on the Calibrate screen,
+7-pin/10-pin corner labels, and/or a warning when the breakpoint side
+strongly contradicts profile handedness (`state.svelte.ts: handedness()`
++ `cv/metrics.ts`). Not fixed in the audit pass, by request.
